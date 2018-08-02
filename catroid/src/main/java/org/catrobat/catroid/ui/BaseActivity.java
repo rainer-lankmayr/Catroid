@@ -38,6 +38,8 @@ import org.catrobat.catroid.ui.settingsfragments.AccessibilityProfile;
 import org.catrobat.catroid.ui.settingsfragments.SettingsFragment;
 import org.catrobat.catroid.utils.CrashReporter;
 
+import java.util.Locale;
+
 public abstract class BaseActivity extends AppCompatActivity {
 
 	public static final String RECOVERED_FROM_CRASH = "RECOVERED_FROM_CRASH";
@@ -46,6 +48,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		applyAccessibilityStyles();
+		CatroidApplication.defaultSystemLanguage = Locale.getDefault().getLanguage();
 
 		Thread.setDefaultUncaughtExceptionHandler(new BaseExceptionHandler(this));
 		checkIfCrashRecoveryAndFinishActivity(this);

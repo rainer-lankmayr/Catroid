@@ -1,0 +1,17 @@
+# remove the leading '#' to uncomment lines
+
+app_package_name('org.catrobat.catroid')
+use_tests_in_packages(['org.catrobat.catroid.screenshots'])
+
+app_apk_path('./catroid/build/outputs/apk/catroid/debug/catroid-catroid-debug.apk')
+tests_apk_path('./catroid/build/outputs/apk/androidTest/catroid/debug/catroid-catroid-debug-androidTest.apk')
+
+locales(['en-US', 'ar', 'de-DE'])
+
+# clear all previously generated screenshots in your local output directory before creating new ones
+clear_previous_screenshots(true)
+
+exit_on_test_failure (false)
+
+# For more information about all available options run
+#   fastlane screengrab --help
