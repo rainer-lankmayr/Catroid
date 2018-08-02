@@ -242,6 +242,9 @@ dependencies {
     androidTestCompile ('tools.fastlane:screengrab:1.1.0') {
         exclude group: 'com.android.support'
     }
+    androidTestCompile ('com.android.support.test.espresso:espresso-web:3.0.1') {
+        exclude group: 'com.android.support'
+    }
 
     compile ('com.android.support.test.espresso:espresso-core:3.0.1') {
         exclude group: 'com.android.support'

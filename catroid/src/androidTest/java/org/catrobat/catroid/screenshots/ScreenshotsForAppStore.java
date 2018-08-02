@@ -25,10 +25,15 @@ package org.catrobat.catroid.screenshots;
 
 import android.preference.PreferenceManager;
 import android.support.test.InstrumentationRegistry;
+//import android.support.test.espresso.web.assertion.WebViewAssertions.webMatches;
 import android.support.test.espresso.DataInteraction;
 import android.support.test.espresso.ViewInteraction;
 import android.support.test.espresso.action.ViewActions;
 import android.support.test.espresso.contrib.RecyclerViewActions;
+import android.support.test.espresso.web.assertion.WebAssertion;
+import android.support.test.espresso.web.assertion.WebViewAssertions;
+import android.support.test.espresso.web.matcher.DomMatchers;
+import android.support.test.espresso.web.sugar.Web;
 import android.support.test.espresso.web.webdriver.Locator;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
@@ -80,18 +85,23 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.Espresso.pressBack;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.scrollTo;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 //import static android.support.test.espresso.Espresso.;
+import static android.support.test.espresso.web.assertion.WebViewAssertions.webMatches;
+import static android.support.test.espresso.web.model.Atoms.getTitle;
 import static android.support.test.espresso.web.sugar.Web.onWebView;
+import static android.support.test.espresso.web.webdriver.DriverAtoms.getText;
 import static android.support.test.espresso.web.webdriver.DriverAtoms.webClick;
 import static android.support.test.espresso.web.webdriver.DriverAtoms.findElement;
 import static android.support.test.espresso.web.webdriver.DriverAtoms.webKeys;
 import static org.catrobat.catroid.uiespresso.formulaeditor.utils.FormulaEditorDataListWrapper.onDataList;
 import static org.catrobat.catroid.uiespresso.formulaeditor.utils.FormulaEditorWrapper.onFormulaEditor;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.is;
@@ -100,46 +110,46 @@ import static org.hamcrest.Matchers.is;
 @RunWith(AndroidJUnit4.class)
 public class ScreenshotsForAppStore {
 
+	private static final String AGREED_TO_PRIVACY_POLICY_SETTINGS_KEY = "AgreedToPrivacyPolicy";
+
 	@ClassRule
 	public static final LocaleTestRule localeTestRule = new LocaleTestRule();
 
 	@Rule
-	public ActivityTestRule<MainMenuActivity> mActivityTestRule = new ActivityTestRule<>(MainMenuActivity.class);
+//	public ActivityTestRule<MainMenuActivity> mActivityTestRule = new ActivityTestRule<>(MainMenuActivity.class);
 //	public ActivityTestRule<MainMenuActivity> mActivityTestRule = new ActivityTestRule<>(MainMenuActivity.class, false, false);
+	public ActivityTestRule<MainMenuActivity> mActivityTestRule =
+			new ActivityTestRule<MainMenuActivity>(MainMenuActivity.class) {
+				@Override
+				protected void beforeActivityLaunched() {
+					PreferenceManager.getDefaultSharedPreferences(InstrumentationRegistry.getTargetContext())
+							.edit()
+							.putBoolean(AGREED_TO_PRIVACY_POLICY_SETTINGS_KEY, true)
+							.commit();
+				}
+			};
 
 	@Rule
-	public BaseActivityInstrumentationRule<SpriteActivity> mFormulaEditorTestRule = new
-			BaseActivityInstrumentationRule<>(SpriteActivity.class, SpriteActivity.EXTRA_FRAGMENT_POSITION,
+	public BaseActivityInstrumentationRule<SpriteActivity> mFormulaEditorTestRule =
+			new BaseActivityInstrumentationRule<>(SpriteActivity.class, SpriteActivity.EXTRA_FRAGMENT_POSITION,
 			SpriteActivity.FRAGMENT_SCRIPTS);
 
 	@Rule
 	public ActivityTestRule<WebViewActivity> mWebActivityTestRule =
 			new ActivityTestRule<WebViewActivity>(WebViewActivity.class,
 					false, false) {
-
 				@Override
 				protected void afterActivityLaunched() {
 					onWebView().forceJavascriptEnabled();
 				}
 			};
 
-	private static final String AGREED_TO_PRIVACY_POLICY_SETTINGS_KEY = "AgreedToPrivacyPolicy";
-
 	@Before
 	public void setUp() {
-//		mActivityTestRule.launchActivity();
-//		mActivityTestRule.launchActivity(null);
 		Screengrab.setDefaultScreenshotStrategy(new UiAutomatorScreenshotStrategy());
 //		Screengrab.setDefaultScreenshotStrategy(new FalconScreenshotStrategy(mActivityTestRule.getActivity()));
 
-		boolean hasUserAgreedToPrivacyPolicy = PreferenceManager.getDefaultSharedPreferences(InstrumentationRegistry
-				.getTargetContext())
-				.getBoolean(AGREED_TO_PRIVACY_POLICY_SETTINGS_KEY, false);
-
-		if (!hasUserAgreedToPrivacyPolicy) {
-			onView(withId(R.id.accept)).perform(click());
-		}
-		sleep(1000);
+//		mActivityTestRule.launchActivity(null);
 	}
 
 	@Test
@@ -147,6 +157,8 @@ public class ScreenshotsForAppStore {
 		// Added a sleep statement to match the app's execution delay.
 		// The recommended way to handle such scenarios is to use Espresso idling resources:
 		// https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+
+		onView(withText(R.string.main_menu_programs)).check(matches(isDisplayed()));
 
 		takeScreenshot("screenshot1");
 
@@ -167,7 +179,7 @@ public class ScreenshotsForAppStore {
 		recyclerView3.perform(actionOnItemAtPosition(3, click()));
 
 		onView(withText(R.string.scripts)).perform(click());
-
+		onView(withId(R.id.button_play)).check(matches(isDisplayed()));
 		takeScreenshot("screenshot2");
 
 //		onView(withId(R.id.brick_if_begin_edit_text)).perform(click());
@@ -193,7 +205,7 @@ public class ScreenshotsForAppStore {
 		appCompatTextView.perform(click());
 
 		onView(withId(R.id.formula_editor_edit_field)).perform(click());
-
+		onView(withId(R.id.formula_editor_keyboard_ok)).check(matches(isDisplayed()));
 		takeScreenshot("screenshot3");
 	}
 
@@ -222,8 +234,8 @@ public class ScreenshotsForAppStore {
 ////		onView(withId(R.id.formula_editor_keyboard_data)).perform(click());
 ////		onFormulaEditor().performEnterFormula("(1)+1-1*1/1=1");
 //
-//		sleep(2000);
-//		takeScreenshot("screenshot3");
+//		sleep(1000);
+//		takeScreenshot("screenshot10");
 //	}
 
 	@Test
@@ -231,7 +243,11 @@ public class ScreenshotsForAppStore {
 		onView(withText(R.string.main_menu_web)).perform(click());
 		sleep(7000);
 
-		ViewInteraction webView = onView(withId((R.id.webView)));
+//		ViewInteraction webView = onView(withId((R.id.webView)));
+
+//		onWebView().check(WebViewAssertions.webContent(DomMatchers.hasElementWithId("mostDownloaded")));
+//		onWebView().check(WebViewAssertions.webContent(DomMatchers.containingTextInBody("Catrobat")));
+//		onWebView().check(webMatches(getTitle(), is("Pocket Code Website")));  // works but not waiting
 
 		onWebView()
 				.withElement(findElement(Locator.ID, "mostDownloaded"))
@@ -255,9 +271,7 @@ public class ScreenshotsForAppStore {
 		if (screenshotName.equals("")) {
 			screenshotName = "untitled";
 		}
-		sleep(500);
 		Screengrab.screenshot(screenshotName);
-		sleep(100);
 	}
 
 	private static Matcher<View> childAtPosition(
