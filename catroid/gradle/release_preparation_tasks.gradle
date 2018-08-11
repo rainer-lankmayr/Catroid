@@ -1,0 +1,233 @@
+/*
+ * Catroid: An on-device visual programming system for Android devices
+ * Copyright (C) 2010-2018 The Catrobat Team
+ * (<http://developer.catrobat.org/credits>)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * An additional term exception under section 7 of the GNU Affero
+ * General Public License, version 3, is available at
+ * http://developer.catrobat.org/license_additional_term
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+configurations {
+    crowdinCli
+}
+
+dependencies {
+    crowdinCli files("../crowdin/lib/crowdin-cli.jar")
+}
+
+ext {
+    crowdinPath = projectDir.parent + "/crowdin"
+    crowdinArchivePath = crowdinPath + "/crowdin.zip"
+    crowdinExtractedPath = crowdinPath + "/extracted"
+    crowdinPlayStorePath = crowdinPath + "/extracted/catroid/PlayStore"
+    fastlanePath = projectDir.parent + "/fastlane"
+    fastlaneMetadataPath = fastlanePath + "/metadata/txt" //TODO "/android" instead of "txt"
+
+    playStoreLimitTitle = 50
+    playStoreLimitShortDescription = 80
+    playStoreLimitFullDescription = 4000
+}
+
+final String releasePreparationGroup = "release preparation"
+
+def languageMap = [
+        "ar-rSA" : "ar",
+        "az-rAZ" : "az-AZ",
+        "bg-rBG" : "bg",
+        "ca-rES" : "ca",
+        "cs-rCZ" : "cs-CZ",
+        "da-rDK" : "da-DK",
+        "de-rDE" : "de-DE",
+        "el-rGR" : "el-GR",
+        "en-rAU" : "en-AU",
+        "en-rCA" : "en-CA",
+        "en-rGB" : "en-GB", // what about en-US
+        "es-rES" : "es-ES",
+        "fa-rAF" : "fa",
+        "fr-rFR" : "fr-FR",
+        "gl-rES" : "gl-ES",
+        "hi-rIN" : "hi-IN",
+        "hr-rHR" : "hr",
+        "hu-rHU" : "hu-HU",
+        "in-rID" : "id", // id-ID?
+        "it-rIT" : "it-IT",
+        "ja-rJP" : "ja-JP",
+        "kn-rIN" : "kn-IN",
+        "ko-rKR" : "ko-KR",
+        "lt-rLT" : "lt",
+        "mk-rMK" : "mk-MK",
+        "ml-rIN" : "ml-IN",
+        "ms-rMY" : "ms",
+        "nl-rNL" : "nl-NL",
+        "no-rNO" : "no-NO",
+        "pl-rPL" : "pl-PL",
+        "pt-rBR" : "pt-BR",
+        "pt-rPT" : "pt-PT", // why markred remove in google doc?
+        "ro-rRO" : "ro",
+        "ru-rRU" : "ru-RU",
+        "sk-rSK" : "sk",
+        "sl-rSI" : "sl",
+        "sr-rCS" : "sr",
+        "sv-rSE" : "sv-SV",
+        "sw-rKE" : "sw",
+        "ta-rIN" : "ta-IN",
+        "te-rIN" : "te-IN",
+        "th-rTH" : "th",
+        "tr-rTR" : "tr-TR",
+        "uk-rUA" : "uk",
+        "vi-rVN" : "vi",
+        "zh-rCN" : "zh-CN",
+        "zh-rTW" : "zh-TW"
+]
+
+task createCrowdinDirectory() {
+    group releasePreparationGroup
+
+    final File crowdinDir = new File(crowdinPath)
+//    if (crowdinDir.exists()) {
+//        crowdinDir.deleteDir()
+//    }
+    crowdinDir.mkdirs()
+}
+
+task createFastlaneDirectory() {
+    group releasePreparationGroup
+
+    final File faslaneDir = new File(fastlanePath)
+    faslaneDir.mkdirs()
+}
+
+task downloadCrowdinFiles(type:Exec) {
+    description "Downloads crowdin translations for App Store information."
+    group releasePreparationGroup
+    dependsOn createCrowdinDirectory
+
+    // TODO: Crowdin key is manually inserted for now. Needs to be loaded from a secure storage.
+    String key = ""
+
+    doFirst { logger.lifecycle("Downloading crowdin translations ...") }
+    executable "sh"
+    args ("-c",
+            "wget -q --tries=3 --output-document=" + crowdinArchivePath +
+                    " https://api.crowdin.com/api/project/catrobat/download/all.zip?key=" + key)
+    doLast{ logger.lifecycle("Downloading crowdin translations done.") }
+
+//    ignoreExitValue true
+//    doLast {
+//        if(execResult == 0) {
+//            println "Download successful."
+//        } else {
+//            println "An Error occurred: " + execResult
+//        }
+//    }
+}
+
+task unpackCrowdinFiles(type: Copy) {
+    description "Unpacks the previously downloaded crowdin zip file."
+    group releasePreparationGroup
+    dependsOn downloadCrowdinFiles
+
+    def zipFile = file(project.ext.crowdinArchivePath)
+    def outputDir = file(project.ext.crowdinExtractedPath)
+
+    doFirst { logger.lifecycle("Unpacking crowdin zip file ...") }
+    from zipTree(zipFile)
+    into outputDir
+    doLast { logger.lifecycle( "Unpacking crowdin zip file done.") }
+}
+
+task generateAppStoreInfo {
+    description "Generating App Store info files from local crowdin translations."
+    group releasePreparationGroup
+//    dependsOn unpackCrowdinFiles
+
+    doLast {
+        logger.lifecycle("Generating App Store info files.")
+        FileTree tree = fileTree(project.ext.crowdinPlayStorePath)
+        tree.include "**/*.xml"
+
+        tree.each { File file ->
+            logger.info("Processing file: " + file)
+
+            def directories = file.parent.split("/")
+            String crowdinCode = directories[directories.size() - 1]
+            String androidCode = languageMap.get(crowdinCode)
+            logger.info("Language codes: " + crowdinCode + " --> " + androidCode)
+
+            if (androidCode != null) {
+                def xml = new XmlParser().parse(file)
+
+                File dirFile = new File(project.ext.fastlaneMetadataPath + "/" + androidCode)
+                dirFile.mkdirs()
+
+                String title = "${xml.string[0].text()}"
+                if (title.length() > project.ext.playStoreLimitTitle) {
+                    logger.warn("Title of " + crowdinCode + " is too long. Truncating to " +
+                            project.ext.playStoreLimitTitle + " characters.")
+                    title = title.take(project.ext.playStoreLimitTitle)
+                }
+                File titleFile = new File(project.ext.fastlaneMetadataPath + "/" + androidCode,
+                        "title.txt")
+                titleFile.text = title
+
+                String shortDescribtion = "${xml.string[1].text()}"
+                if (shortDescribtion.length() > project.ext.playStoreLimitShortDescription) {
+                    logger.warn("Short describtion of " + crowdinCode + " is too long. Truncating to " +
+                            project.ext.playStoreLimitShortDescription + " characters.")
+                    shortDescribtion = shortDescribtion.take(project.ext.playStoreLimitShortDescription)
+                }
+                File shortDescriptionFile = new File(project.ext.fastlaneMetadataPath + "/" +
+                        androidCode, "short_describtion.txt")
+                shortDescriptionFile.text = shortDescribtion
+
+                String fullDescription = "${xml.string[2].text()}"
+                if (fullDescription.length() > project.ext.playStoreLimitFullDescription) {
+                    logger.warn("Full describtion of " + crowdinCode + " is too long. Truncating to " +
+                            project.ext.playStoreLimitFullDescription + " characters.")
+                    fullDescription = fullDescription.take(project.ext.playStoreLimitFullDescription)
+                }
+                File fullDescribtionFile = new File(project.ext.fastlaneMetadataPath + "/" +
+                        androidCode, "full_describtion.txt")
+                fullDescribtionFile.text = fullDescription
+            }
+        }
+        logger.lifecycle("Generating App Store info done.")
+    }
+}
+
+task copyCrowdinFiles {
+    description "Copies crowdin files for the AppStore to the fastlane folder."
+    group releasePreparationGroup
+
+    doFirst { logger.lifecycle("Copying crowdin files to fastlane folder ...") }
+    //    from "${buildDir}/crowdin"
+    //    include "**/*.xml"
+    //    into "${buildDir}/fastlane"
+    doLast { logger.lifecycle("Copying done.") }
+}
+
+task makeScreenshotsPocketCode(type:Exec) {
+    description "Creates Screenshots for the App Store with Fastlane/Screengrab."
+    group releasePreparationGroup
+
+    workingDir projectDir.parent
+
+    doFirst { logger.lifecycle("Taking screenshots for App Store ...") }
+    executable "sh"
+    args("-c", "./gradlew assembleDebug assembleAndroidTest; fastlane screengrab")
+    doFirst { logger.lifecycle("Taking screenshots for App Store done.") }
+}
