@@ -107,7 +107,7 @@ def languageMapScreenshots = [
         "hi" : ["hi-IN"],
         "hr" : ["hr"],
         "hu" : ["hu-HU"],
-        "id" : ["id"], // id-ID?
+        "in" : ["id"], // id-ID?
         "it" : ["it-IT"],
         "ja" : ["ja-JP"],
         "kn" : ["kn-IN"],
@@ -318,8 +318,6 @@ task renameScreenshotFolders() {
         logger.lifecycle("Renaming screenshot folders.")
 
         new File(project.ext.fastlaneAndroidPath).eachDir() { dir ->
-            println dir.getPath()
-
             def directories = dir.getPath().split("/")
             String localesCode = directories[directories.size()-1]
             def androidCodes = languageMapScreenshots.get(localesCode)
@@ -327,7 +325,7 @@ task renameScreenshotFolders() {
 
             if (androidCodes != null && androidCodes[0] != localesCode) {
                 androidCodes.each { androidCode ->
-                    logger.info("Copying files with local code '" + localesCode +
+                    logger.lifecycle("Copying files with local code '" + localesCode +
                             "' to '" + androidCode + "'.")
 
                     ant.copy (todir: project.ext.fastlaneAndroidPath + "/" + androidCode) {
