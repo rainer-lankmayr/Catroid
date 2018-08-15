@@ -154,11 +154,8 @@ public class ScreenshotsForAppStore {
 
 	@Test
 	public void createScreenshotsApp() {
-		// Added a sleep statement to match the app's execution delay.
-		// The recommended way to handle such scenarios is to use Espresso idling resources:
-		// https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-
 		onView(withText(R.string.main_menu_programs)).check(matches(isDisplayed()));
+		sleep(500);
 
 		takeScreenshot("screenshot1");
 

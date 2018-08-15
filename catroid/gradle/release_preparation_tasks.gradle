@@ -21,21 +21,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-configurations {
-    crowdinCli
-}
-
-dependencies {
-    crowdinCli files("../crowdin/lib/crowdin-cli.jar")
-}
-
 ext {
     crowdinPath = projectDir.parent + "/crowdin"
+    crowdinKeyPath = crowdinPath + "/keyfile"
     crowdinArchivePath = crowdinPath + "/crowdin.zip"
     crowdinExtractedPath = crowdinPath + "/extracted"
     crowdinPlayStorePath = crowdinPath + "/extracted/catroid/PlayStore"
     fastlanePath = projectDir.parent + "/fastlane"
-    fastlaneMetadataPath = fastlanePath + "/metadata/txt" //TODO "/android" instead of "txt"
+    fastlaneMetadataPath = fastlanePath + "/metadata"
+    fastlaneAndroidPath = fastlanePath + "/metadata/android"
 
     playStoreLimitTitle = 50
     playStoreLimitShortDescription = 80
@@ -45,6 +39,7 @@ ext {
 final String releasePreparationGroup = "release preparation"
 
 def languageMap = [
+        // crowdin : Android
         "ar-rSA" : "ar",
         "az-rAZ" : "az-AZ",
         "bg-rBG" : "bg",
@@ -76,7 +71,7 @@ def languageMap = [
         "no-rNO" : "no-NO",
         "pl-rPL" : "pl-PL",
         "pt-rBR" : "pt-BR",
-        "pt-rPT" : "pt-PT", // why markred remove in google doc?
+        "pt-rPT" : "pt-PT", // why marked remove in google doc?
         "ro-rRO" : "ro",
         "ru-rRU" : "ru-RU",
         "sk-rSK" : "sk",
@@ -94,13 +89,67 @@ def languageMap = [
         "zh-rTW" : "zh-TW"
 ]
 
+def languageMapScreenshots = [
+        // fastlane screenshot locales : Android
+        "ar" : ["ar"],
+        "az" : ["az-AZ"],
+        "bg" : ["bg"],
+        "ca" : ["ca"],
+        "cs" : ["cs-CZ"],
+        "da" : ["da-DK"],
+        "de" : ["de-DE"],
+        "el" : ["el-GR"],
+        "en" : ["en-AU","en-CA", "en-GB"], // what about en-US
+        "es" : ["es-ES"],
+        "fa" : ["fa"],
+        "fr" : ["fr-FR"],
+        "gl" : ["gl-ES"],
+        "hi" : ["hi-IN"],
+        "hr" : ["hr"],
+        "hu" : ["hu-HU"],
+        "id" : ["id"], // id-ID?
+        "it" : ["it-IT"],
+        "ja" : ["ja-JP"],
+        "kn" : ["kn-IN"],
+        "ko" : ["ko-KR"],
+        "lt" : ["lt"],
+        "mk" : ["mk-MK"],
+        "ml" : ["ml-IN"],
+        "ms" : ["ms"],
+        "nl" : ["nl-NL"],
+        "no" : ["no-NO"],
+        "pl" : ["pl-PL"],
+        "pt" : ["pt-BR", "pt-PT"], // why "pt-PT" marked remove in google doc?
+        "ro" : ["ro"],
+        "ru" : ["ru-RU"],
+        "sk" : ["sk"],
+        "sl" : ["sl"],
+        "sr" : ["sr"],
+        "sv" : ["sv-SV"],
+        "sw" : ["sw"],
+        "ta" : ["ta-IN"],
+        "te" : ["te-IN"],
+        "th" : ["th"],
+        "tr" : ["tr-TR"],
+        "uk" : ["uk"],
+        "vi" : ["vi"],
+        "zh" : ["zh-CN", "zh-TW"]
+]
+
+String testLocales = "\"'ar', 'de-DE', 'en-US'\""
+
+String getLocalesStringFromLanguageMap = languageMap.values().inspect().toString()
+        .replace("[", "\"")
+        .replace("]", "\"")
+
+String getLocalesStringFromLanguageMapScreenshots = languageMapScreenshots.values().inspect().toString()
+        .replace("[", "\"")
+        .replace("]", "\"")
+
 task createCrowdinDirectory() {
     group releasePreparationGroup
 
     final File crowdinDir = new File(crowdinPath)
-//    if (crowdinDir.exists()) {
-//        crowdinDir.deleteDir()
-//    }
     crowdinDir.mkdirs()
 }
 
@@ -111,29 +160,46 @@ task createFastlaneDirectory() {
     faslaneDir.mkdirs()
 }
 
-task downloadCrowdinFiles(type:Exec) {
+task cleanFastlane(type: Delete) {
+    description "Delete objects in fastlane folder."
+    group releasePreparationGroup
+
+    delete fastlaneMetadataPath
+    followSymlinks = true
+}
+
+task cleanCrowdin(type: Delete) {
+    description "Delete objects in crowdin folder."
+    group releasePreparationGroup
+
+    delete crowdinExtractedPath, crowdinArchivePath
+    followSymlinks = true
+}
+
+task downloadCrowdinFiles() {
     description "Downloads crowdin translations for App Store information."
     group releasePreparationGroup
     dependsOn createCrowdinDirectory
 
-    // TODO: Crowdin key is manually inserted for now. Needs to be loaded from a secure storage.
-    String key = ""
+    doLast {
+        String key = ""
+        // TODO: Crowdin key is loaded from plaintext. Needs to be loaded from a secure storage.
+        try {
+            key = new File(project.ext.crowdinKeyPath).text
+        } catch (IOException e) {
+            logger.error("You have to provide the crowdin key in the following file " +
+                    project.ext.crowdinKeyPath + ".")
+            throw new GradleException("Crowdin keyfile not found")
+        }
 
-    doFirst { logger.lifecycle("Downloading crowdin translations ...") }
-    executable "sh"
-    args ("-c",
-            "wget -q --tries=3 --output-document=" + crowdinArchivePath +
+        logger.lifecycle("Downloading crowdin translations ...")
+        exec {
+            executable "sh"
+            args ("-c", "wget -q --tries=3 --output-document=" + crowdinArchivePath +
                     " https://api.crowdin.com/api/project/catrobat/download/all.zip?key=" + key)
-    doLast{ logger.lifecycle("Downloading crowdin translations done.") }
-
-//    ignoreExitValue true
-//    doLast {
-//        if(execResult == 0) {
-//            println "Download successful."
-//        } else {
-//            println "An Error occurred: " + execResult
-//        }
-//    }
+        }
+        logger.lifecycle("Downloading crowdin translations done.")
+    }
 }
 
 task unpackCrowdinFiles(type: Copy) {
@@ -153,7 +219,7 @@ task unpackCrowdinFiles(type: Copy) {
 task generateAppStoreInfo {
     description "Generating App Store info files from local crowdin translations."
     group releasePreparationGroup
-//    dependsOn unpackCrowdinFiles
+    dependsOn unpackCrowdinFiles
 
     doLast {
         logger.lifecycle("Generating App Store info files.")
@@ -166,12 +232,12 @@ task generateAppStoreInfo {
             def directories = file.parent.split("/")
             String crowdinCode = directories[directories.size() - 1]
             String androidCode = languageMap.get(crowdinCode)
-            logger.info("Language codes: " + crowdinCode + " --> " + androidCode)
+            logger.info("Language code mapping: " + crowdinCode + " --> " + androidCode)
 
             if (androidCode != null) {
                 def xml = new XmlParser().parse(file)
 
-                File dirFile = new File(project.ext.fastlaneMetadataPath + "/" + androidCode)
+                File dirFile = new File(project.ext.fastlaneAndroidPath + "/" + androidCode)
                 dirFile.mkdirs()
 
                 String title = "${xml.string[0].text()}"
@@ -180,7 +246,7 @@ task generateAppStoreInfo {
                             project.ext.playStoreLimitTitle + " characters.")
                     title = title.take(project.ext.playStoreLimitTitle)
                 }
-                File titleFile = new File(project.ext.fastlaneMetadataPath + "/" + androidCode,
+                File titleFile = new File(project.ext.fastlaneAndroidPath + "/" + androidCode,
                         "title.txt")
                 titleFile.text = title
 
@@ -190,7 +256,7 @@ task generateAppStoreInfo {
                             project.ext.playStoreLimitShortDescription + " characters.")
                     shortDescribtion = shortDescribtion.take(project.ext.playStoreLimitShortDescription)
                 }
-                File shortDescriptionFile = new File(project.ext.fastlaneMetadataPath + "/" +
+                File shortDescriptionFile = new File(project.ext.fastlaneAndroidPath + "/" +
                         androidCode, "short_describtion.txt")
                 shortDescriptionFile.text = shortDescribtion
 
@@ -200,7 +266,7 @@ task generateAppStoreInfo {
                             project.ext.playStoreLimitFullDescription + " characters.")
                     fullDescription = fullDescription.take(project.ext.playStoreLimitFullDescription)
                 }
-                File fullDescribtionFile = new File(project.ext.fastlaneMetadataPath + "/" +
+                File fullDescribtionFile = new File(project.ext.fastlaneAndroidPath + "/" +
                         androidCode, "full_describtion.txt")
                 fullDescribtionFile.text = fullDescription
             }
@@ -209,25 +275,96 @@ task generateAppStoreInfo {
     }
 }
 
-task copyCrowdinFiles {
-    description "Copies crowdin files for the AppStore to the fastlane folder."
-    group releasePreparationGroup
-
-    doFirst { logger.lifecycle("Copying crowdin files to fastlane folder ...") }
-    //    from "${buildDir}/crowdin"
-    //    include "**/*.xml"
-    //    into "${buildDir}/fastlane"
-    doLast { logger.lifecycle("Copying done.") }
-}
-
 task makeScreenshotsPocketCode(type:Exec) {
     description "Creates Screenshots for the App Store with Fastlane/Screengrab."
+    group releasePreparationGroup
+    dependsOn "assembleDebug", "assembleAndroidTest"
+
+    workingDir projectDir.parent
+
+    def locales = languageMapScreenshots.values()
+    def newLocales = []
+    locales.each{ value ->
+        newLocales.add(value.inspect().split(",").first())
+    }
+    newLocales = newLocales.toString()
+            .replace("[", "")
+            .replace("]", "")
+    newLocales = "\"" + newLocales + "\""
+
+    String fastlaneCommand = "fastlane screengrab" +
+            " --app_package_name 'org.catrobat.catroid'" +
+            " --use_tests_in_packages 'org.catrobat.catroid.screenshots'" +
+            " --app_apk_path './catroid/build/outputs/apk/catroid/debug/catroid-catroid-debug.apk'" +
+            " --test_instrumentation_runner 'android.support.test.runner.AndroidJUnitRunner'" +
+            " --tests_apk_path './catroid/build/outputs/apk/androidTest/catroid/debug/catroid-catroid-debug-androidTest.apk'" +
+            " --clear_previous_screenshots true " +
+            " --exit_on_test_failure false " +
+//            " --locales " + getLocalesStringFromLanguageMap //TODO
+            " --locales " + newLocales
+//            " --locales " + testLocales
+
+    doFirst { logger.lifecycle("Taking screenshots for App Store ...") }
+    executable "sh"
+    args("-c", fastlaneCommand)
+    doLast { logger.lifecycle("Taking screenshots for App Store done.") }
+}
+
+task renameScreenshotFolders() {
+    description "Rename Screenshot folders to match Play Store locales."
+    group releasePreparationGroup
+
+    doLast {
+        logger.lifecycle("Renaming screenshot folders.")
+
+        new File(project.ext.fastlaneAndroidPath).eachDir() { dir ->
+            println dir.getPath()
+
+            def directories = dir.getPath().split("/")
+            String localesCode = directories[directories.size()-1]
+            def androidCodes = languageMapScreenshots.get(localesCode)
+            logger.info("Language code mapping: " + localesCode + " --> " + androidCodes)
+
+            if (androidCodes != null && androidCodes[0] != localesCode) {
+                androidCodes.each { androidCode ->
+                    logger.info("Copying files with local code '" + localesCode +
+                            "' to '" + androidCode + "'.")
+
+                    ant.copy (todir: project.ext.fastlaneAndroidPath + "/" + androidCode) {
+                        fileset(dir: dir.getPath())
+                    }
+                }
+                delete dir
+            }
+        }
+        logger.lifecycle("Renaming screenshot folders done.")
+    }
+}
+
+task uploadMetadataToPlayStore(type:Exec) {
+    description "Uploads the fastlane metadata folder to Goggle Play Store."
     group releasePreparationGroup
 
     workingDir projectDir.parent
 
-    doFirst { logger.lifecycle("Taking screenshots for App Store ...") }
+    doFirst { logger.lifecycle("Uploading Metadata to Play Store ...") }
     executable "sh"
-    args("-c", "./gradlew assembleDebug assembleAndroidTest; fastlane screengrab")
-    doFirst { logger.lifecycle("Taking screenshots for App Store done.") }
+//    args("-c", "fastlane android Metadata_Catroid")
+    args("-c", " ")
+    doLast { logger.lifecycle("Uploading Metadata to Play Store done.") }
 }
+
+task uploadAPKToPlayStore(type:Exec) {
+    description "Uploads the Catroid APK to Goggle Play Store."
+    group releasePreparationGroup
+
+    workingDir projectDir.parent
+
+    doFirst { logger.lifecycle("Uploading Metadata to Play Store ...") }
+    executable "sh"
+//    args("-c", "fastlane android APK_Catroid")
+    args("-c", " ")
+    doLast { logger.lifecycle("Uploading Metadata to Play Store done.") }
+}
+
+
