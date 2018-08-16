@@ -36,9 +36,10 @@ ext {
     playStoreLimitFullDescription = 4000
 }
 
-final String releasePreparationGroup = "release preparation"
+final String releasePreparationMainGroup = "release preparation main"
+final String releasePreparationSubGroup = "release preparation sub"
 
-def languageMap = [
+def languageMapCrowdin = [
         // crowdin : Android
         "ar-rSA" : "ar",
         "az-rAZ" : "az-AZ",
@@ -138,31 +139,27 @@ def languageMapScreenshots = [
 
 String testLocales = "\"'ar', 'de-DE', 'en-US'\""
 
-String getLocalesStringFromLanguageMap = languageMap.values().inspect().toString()
+String getMappedLocalesCrowdin = languageMapCrowdin.values().inspect().toString()
         .replace("[", "\"")
         .replace("]", "\"")
 
-String getLocalesStringFromLanguageMapScreenshots = languageMapScreenshots.values().inspect().toString()
-        .replace("[", "\"")
-        .replace("]", "\"")
+String getMappedLocalesForScreenshots = languageMapScreenshots.values().collect { it ->
+    "'" + it.first() + "'"
+}.toString().replace("[", "\"").replace("]", "\"")
 
-task createCrowdinDirectory() {
-    group releasePreparationGroup
-
+def createCrowdinDirectory() {
     final File crowdinDir = new File(crowdinPath)
     crowdinDir.mkdirs()
 }
 
-task createFastlaneDirectory() {
-    group releasePreparationGroup
-
+def createFastlaneDirectory() {
     final File faslaneDir = new File(fastlanePath)
     faslaneDir.mkdirs()
 }
 
 task cleanFastlane(type: Delete) {
     description "Delete objects in fastlane folder."
-    group releasePreparationGroup
+    group releasePreparationSubGroup
 
     delete fastlaneMetadataPath
     followSymlinks = true
@@ -170,7 +167,7 @@ task cleanFastlane(type: Delete) {
 
 task cleanCrowdin(type: Delete) {
     description "Delete objects in crowdin folder."
-    group releasePreparationGroup
+    group releasePreparationSubGroup
 
     delete crowdinExtractedPath, crowdinArchivePath
     followSymlinks = true
@@ -178,10 +175,10 @@ task cleanCrowdin(type: Delete) {
 
 task downloadCrowdinFiles() {
     description "Downloads crowdin translations for App Store information."
-    group releasePreparationGroup
-    dependsOn createCrowdinDirectory
+    group releasePreparationSubGroup
 
     doLast {
+        createCrowdinDirectory()
         String key = ""
         // TODO: Crowdin key is loaded from plaintext. Needs to be loaded from a secure storage.
         try {
@@ -204,7 +201,7 @@ task downloadCrowdinFiles() {
 
 task unpackCrowdinFiles(type: Copy) {
     description "Unpacks the previously downloaded crowdin zip file."
-    group releasePreparationGroup
+    group releasePreparationSubGroup
     dependsOn downloadCrowdinFiles
 
     def zipFile = file(project.ext.crowdinArchivePath)
@@ -218,7 +215,7 @@ task unpackCrowdinFiles(type: Copy) {
 
 task generateAppStoreInfo {
     description "Generating App Store info files from local crowdin translations."
-    group releasePreparationGroup
+    group releasePreparationSubGroup
     dependsOn unpackCrowdinFiles
 
     doLast {
@@ -231,7 +228,7 @@ task generateAppStoreInfo {
 
             def directories = file.parent.split("/")
             String crowdinCode = directories[directories.size() - 1]
-            String androidCode = languageMap.get(crowdinCode)
+            String androidCode = languageMapCrowdin.get(crowdinCode)
             logger.info("Language code mapping: " + crowdinCode + " --> " + androidCode)
 
             if (androidCode != null) {
@@ -250,25 +247,25 @@ task generateAppStoreInfo {
                         "title.txt")
                 titleFile.text = title
 
-                String shortDescribtion = "${xml.string[1].text()}"
-                if (shortDescribtion.length() > project.ext.playStoreLimitShortDescription) {
-                    logger.warn("Short describtion of " + crowdinCode + " is too long. Truncating to " +
-                            project.ext.playStoreLimitShortDescription + " characters.")
-                    shortDescribtion = shortDescribtion.take(project.ext.playStoreLimitShortDescription)
-                }
-                File shortDescriptionFile = new File(project.ext.fastlaneAndroidPath + "/" +
-                        androidCode, "short_describtion.txt")
-                shortDescriptionFile.text = shortDescribtion
-
-                String fullDescription = "${xml.string[2].text()}"
+                String fullDescription = "${xml.string[1].text()}"
                 if (fullDescription.length() > project.ext.playStoreLimitFullDescription) {
-                    logger.warn("Full describtion of " + crowdinCode + " is too long. Truncating to " +
+                    logger.warn("Full description of " + crowdinCode + " is too long. Truncating to " +
                             project.ext.playStoreLimitFullDescription + " characters.")
                     fullDescription = fullDescription.take(project.ext.playStoreLimitFullDescription)
                 }
-                File fullDescribtionFile = new File(project.ext.fastlaneAndroidPath + "/" +
-                        androidCode, "full_describtion.txt")
-                fullDescribtionFile.text = fullDescription
+                File fullDescriptionFile = new File(project.ext.fastlaneAndroidPath + "/" +
+                        androidCode, "full_description.txt")
+                fullDescriptionFile.text = fullDescription
+
+                String shortDescription = "${xml.string[2].text()}"
+                if (shortDescription.length() > project.ext.playStoreLimitShortDescription) {
+                    logger.warn("Short description of " + crowdinCode + " is too long. Truncating to " +
+                            project.ext.playStoreLimitShortDescription + " characters.")
+                    shortDescription = shortDescription.take(project.ext.playStoreLimitShortDescription)
+                }
+                File shortDescriptionFile = new File(project.ext.fastlaneAndroidPath + "/" +
+                        androidCode, "short_description.txt")
+                shortDescriptionFile.text = shortDescription
             }
         }
         logger.lifecycle("Generating App Store info done.")
@@ -277,31 +274,20 @@ task generateAppStoreInfo {
 
 task makeScreenshotsPocketCode(type:Exec) {
     description "Creates Screenshots for the App Store with Fastlane/Screengrab."
-    group releasePreparationGroup
+    group releasePreparationSubGroup
     dependsOn "assembleDebug", "assembleAndroidTest"
 
     workingDir projectDir.parent
-
-    def locales = languageMapScreenshots.values()
-    def newLocales = []
-    locales.each{ value ->
-        newLocales.add(value.inspect().split(",").first())
-    }
-    newLocales = newLocales.toString()
-            .replace("[", "")
-            .replace("]", "")
-    newLocales = "\"" + newLocales + "\""
 
     String fastlaneCommand = "fastlane screengrab" +
             " --app_package_name 'org.catrobat.catroid'" +
             " --use_tests_in_packages 'org.catrobat.catroid.screenshots'" +
             " --app_apk_path './catroid/build/outputs/apk/catroid/debug/catroid-catroid-debug.apk'" +
-            " --test_instrumentation_runner 'android.support.test.runner.AndroidJUnitRunner'" +
             " --tests_apk_path './catroid/build/outputs/apk/androidTest/catroid/debug/catroid-catroid-debug-androidTest.apk'" +
+            " --test_instrumentation_runner 'android.support.test.runner.AndroidJUnitRunner'" +
             " --clear_previous_screenshots true " +
             " --exit_on_test_failure false " +
-//            " --locales " + getLocalesStringFromLanguageMap //TODO
-            " --locales " + newLocales
+            " --locales " + getMappedLocalesForScreenshots
 //            " --locales " + testLocales
 
     doFirst { logger.lifecycle("Taking screenshots for App Store ...") }
@@ -312,7 +298,7 @@ task makeScreenshotsPocketCode(type:Exec) {
 
 task renameScreenshotFolders() {
     description "Rename Screenshot folders to match Play Store locales."
-    group releasePreparationGroup
+    group releasePreparationSubGroup
 
     doLast {
         logger.lifecycle("Renaming screenshot folders.")
@@ -341,7 +327,7 @@ task renameScreenshotFolders() {
 
 task uploadMetadataToPlayStore(type:Exec) {
     description "Uploads the fastlane metadata folder to Goggle Play Store."
-    group releasePreparationGroup
+    group releasePreparationMainGroup
 
     workingDir projectDir.parent
 
@@ -354,7 +340,7 @@ task uploadMetadataToPlayStore(type:Exec) {
 
 task uploadAPKToPlayStore(type:Exec) {
     description "Uploads the Catroid APK to Goggle Play Store."
-    group releasePreparationGroup
+    group releasePreparationMainGroup
 
     workingDir projectDir.parent
 
@@ -365,4 +351,37 @@ task uploadAPKToPlayStore(type:Exec) {
     doLast { logger.lifecycle("Uploading Metadata to Play Store done.") }
 }
 
+task prepareMetadata() {
+    description "Run all taks to prepare files for the Metadata folder."
+    group releasePreparationMainGroup
+    dependsOn downloadCrowdinFiles , unpackCrowdinFiles
+    dependsOn generateAppStoreInfo
+    dependsOn makeScreenshotsPocketCode, renameScreenshotFolders
 
+    doLast {
+        logger.lifecycle("Preparing Metadata done.")
+        logger.lifecycle("Path: " + project.ext.fastlaneMetadataPath)
+    }
+}
+
+unpackCrowdinFiles.mustRunAfter(downloadCrowdinFiles)
+generateAppStoreInfo.mustRunAfter(unpackCrowdinFiles)
+makeScreenshotsPocketCode.shouldRunAfter(unpackCrowdinFiles)
+renameScreenshotFolders.mustRunAfter(makeScreenshotsPocketCode)
+uploadMetadataToPlayStore.mustRunAfter(generateAppStoreInfo, renameScreenshotFolders)
+uploadAPKToPlayStore.mustRunAfter(uploadMetadataToPlayStore)
+
+task testParam() {
+    description "test"
+    group releasePreparationSubGroup
+
+    // pass argument via commandline e.g. "./gradlew -Ptestarg='hello' testParam"
+    doLast{
+        if (project.hasProperty("testarg")) {
+            println project.testarg
+        }
+        else {
+            println "No argument given"
+        }
+    }
+}
