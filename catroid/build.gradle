@@ -56,7 +56,9 @@ apply from: 'gradle/code_quality_tasks.gradle'
 apply from: 'gradle/intellij_config_tasks.gradle'
 apply from: 'gradle/standalone_apk_tasks.gradle'
 apply from: 'gradle/android_tasks.gradle'
-apply from: 'gradle/release_preparation_tasks.gradle'
+apply from: 'gradle/release_crowdin_tasks.gradle'
+apply from: 'gradle/release_fastlane_tasks.gradle'
+apply from: 'gradle/release_tasks.gradle'
 
 check.dependsOn 'checkstyle'
 check.dependsOn 'pmd'
@@ -82,6 +84,18 @@ android {
         exclude 'META-INF/maven/com.google.guava/guava/pom.xml'
         exclude 'META-INF/INDEX.LIST'  //compile problem with parrot arsdk
         exclude 'lib/arm64-v8a/*' // exclude all arm64-v8a libs as we don't have all libs for that architecture
+    }
+
+    signingConfigs {
+        release {
+            // dummyPassword will be replaced by task askForSigningPasswords
+            //storeFile file(System.getenv("KEYSTORE"))
+            //keyAlias System.getenv("KEY_ALIAS")
+            storeFile file("../fastlane/rainer.jks")
+            storePassword "dummyPassword"
+            keyAlias "my-key"
+            keyPassword "dummyPassword"
+        }
     }
 
     buildTypes {
@@ -122,6 +136,8 @@ android {
             buildConfigField "boolean", "FEATURE_CLOUD_MESSAGING_ENABLED", "false"
             buildConfigField "boolean", "CRASHLYTICS_CRASH_REPORT_ENABLED", "true"
             resValue "string", "SNACKBAR_HINTS_ENABLED", "true"
+
+            signingConfig signingConfigs.release
         }
     }
 
