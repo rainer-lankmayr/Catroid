@@ -37,37 +37,54 @@ platform :android do
   end
 
   desc "Catroid upload meta date only"
-  lane :Metadata_Catroid do
+  lane :upload_Metadata_Catroid do
     # ...
     upload_to_play_store(
-      package_name:               'org.catrobat.catrobat',                        
-      metadata_path:              './fastlane/metadata/android',  
-      track:                      'alpha',          
-      json_key:                   'catrobat.json', 
-      skip_upload_apk:            'true',                              
-      skip_upload_metadata:       'false',                               
-      skip_upload_images:         'false',                               
-      skip_upload_screenshots:    'false',                               
-      validate_only:              'false',                               
-      check_superseded_tracks:    'false',           
+      package_name:               'org.catrobat.catrobat',
+      track:                      'alpha',
+      json_key:                   'catrobat.json',
+      metadata_path:              './fastlane/metadata/android',
+      skip_upload_apk:            'true',
+      skip_upload_metadata:       'false',
+      skip_upload_images:         'false',
+      skip_upload_screenshots:    'false',
+      validate_only:              'false',
+      check_superseded_tracks:    'false',
     )
   end
 
   desc "Catroid upload APK in Alpha"
-  lane :APK_Catroid do
+  lane :upload_APK_Catroid do
     # ...
     upload_to_play_store(
       package_name:               'org.catrobat.catroid.test',
-      track:                      'alpha',                          
-      metadata_path:              './fastlane/metadata/android',         
-      json_key:                   'catrobat.json', 
-      skip_upload_apk:            'true',                              
-      apk_paths:                  './catroid/build/outputs/apk/catroid-catroid-release-signed-aligned.apk',
-      skip_upload_metadata:       'true',                               
-      skip_upload_images:         'true',                               
-      skip_upload_screenshots:    'true',                               
-      validate_only:              'false',                               
-      check_superseded_tracks:    'false',     
+      track:                      'alpha',
+      json_key:                   'catrobat.json',
+      metadata_path:              './fastlane/metadata/android',
+      apk_paths:                  './catroid/build/outputs/apk/catroid-catroid-release.apk',
+      skip_upload_apk:            'false',
+      skip_upload_metadata:       'true',
+      skip_upload_images:         'true',
+      skip_upload_screenshots:    'true',
+      validate_only:              'false',
+      check_superseded_tracks:    'false',
     )
   end
+
+  desc "Catroid promote APK in Alpha to Production"
+  lane :promote_Catroid do
+    # ...
+    upload_to_play_store(
+      package_name:               'org.catrobat.catroid.test',
+      track:                      'alpha',
+      track_promote_to:           'production',
+      json_key:                   'catrobat.json',
+      metadata_path:              './fastlane/metadata/android',
+      apk_paths:                  './catroid/build/outputs/apk/catroid-catroid-release-signed-aligned.apk',
+      skip_upload_apk:            'true',
+      skip_upload_metadata:       'true',
+      skip_upload_images:         'true',
+      skip_upload_screenshots:    'true',
+    )
+  end  
 end
