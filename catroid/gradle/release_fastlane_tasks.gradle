@@ -21,7 +21,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-ext {
+project.ext {
     fastlanePath = projectDir.parent + "/fastlane"
     fastlaneMetadataPath = fastlanePath + "/metadata"
     fastlaneAndroidPath = fastlanePath + "/metadata/android"
@@ -32,49 +32,7 @@ final String releasePreparationSubGroup = "release preparation sub"
 
 def languageMapScreenshots = [
         // fastlane screenshot locales : Android
-        "ar" : ["ar"],
-        "az" : ["az-AZ"],
-        "bg" : ["bg"],
-        "ca" : ["ca"],
-        "cs" : ["cs-CZ"],
-        "da" : ["da-DK"],
-        "de" : ["de-DE"],
-        "el" : ["el-GR"],
-        "en" : ["en-AU","en-CA", "en-GB"], // what about en-US
-        "es" : ["es-ES"],
-        "fa" : ["fa"],
-        "fr" : ["fr-FR"],
-        "gl" : ["gl-ES"],
-        "hi" : ["hi-IN"],
-        "hr" : ["hr"],
-        "hu" : ["hu-HU"],
-        "in" : ["id"], // id-ID?
-        "it" : ["it-IT"],
-        "ja" : ["ja-JP"],
-        "kn" : ["kn-IN"],
-        "ko" : ["ko-KR"],
-        "lt" : ["lt"],
-        "mk" : ["mk-MK"],
-        "ml" : ["ml-IN"],
-        "ms" : ["ms"],
-        "nl" : ["nl-NL"],
-        "no" : ["no-NO"],
-        "pl" : ["pl-PL"],
-        "pt" : ["pt-BR", "pt-PT"], // why "pt-PT" marked remove in google doc?
-        "ro" : ["ro"],
-        "ru" : ["ru-RU"],
-        "sk" : ["sk"],
-        "sl" : ["sl"],
-        "sr" : ["sr"],
-        "sv" : ["sv-SE"],
-        "sw" : ["sw"],
-        "ta" : ["ta-IN"],
-        "te" : ["te-IN"],
-        "th" : ["th"],
-        "tr" : ["tr-TR"],
-        "uk" : ["uk"],
-        "vi" : ["vi"],
-        "zh" : ["zh-CN", "zh-TW"]
+        "in" : ["id"],
 ]
 
 String testLocales = "\"'ar', 'de-DE', 'en-US'\""
@@ -99,9 +57,11 @@ task cleanFastlane(type: Delete) {
 task makeScreenshotsPocketCode(type:Exec) {
     description "Creates Screenshots for the App Store with Fastlane/Screengrab."
     group releasePreparationSubGroup
-    dependsOn "assembleDebug", "assembleAndroidTest"
+    dependsOn "assembleAndroidTest"
 
     workingDir projectDir.parent
+
+    String assembleCommand = "./gradlew assembleCatroidDebug -PuseAndroidLocales=true"
 
     String fastlaneCommand = "fastlane screengrab" +
             " --app_package_name 'org.catrobat.catroid'" +
@@ -111,12 +71,12 @@ task makeScreenshotsPocketCode(type:Exec) {
             " --test_instrumentation_runner 'android.support.test.runner.AndroidJUnitRunner'" +
             " --clear_previous_screenshots true " +
             " --exit_on_test_failure false " +
-//            " --locales " + getMappedLocalesForScreenshots
-            " --locales " + testLocales
+//            " --locales " + testLocales
+            " --locales " + project.ext.getMappedLocalesCrowdin
 
     doFirst { logger.lifecycle("Taking screenshots for App Store ...") }
     executable "sh"
-    args("-c", fastlaneCommand)
+    args("-c", assembleCommand + ";" + fastlaneCommand)
     doLast { logger.lifecycle("Taking screenshots for App Store done.") }
 }
 
@@ -131,7 +91,6 @@ task renameScreenshotFolders() {
             def directories = dir.getPath().split("/")
             String localesCode = directories[directories.size()-1]
             def androidCodes = languageMapScreenshots.get(localesCode)
-            logger.info("Language code mapping: " + localesCode + " --> " + androidCodes)
 
             if (androidCodes != null && androidCodes[0] != localesCode) {
                 androidCodes.each { androidCode ->

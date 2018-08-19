@@ -21,7 +21,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-ext {
+project.ext {
     crowdinPath = projectDir.parent + "/crowdin"
     crowdinKeyPath = crowdinPath + "/keyfile"
     crowdinArchivePath = crowdinPath + "/crowdin.zip"
@@ -36,7 +36,7 @@ ext {
 final String releasePreparationMainGroup = "release preparation main"
 final String releasePreparationSubGroup = "release preparation sub"
 
-def languageMapCrowdin = [
+project.ext.languageMapCrowdin = [
         // crowdin : Android
         "ar-SA" : "ar",
         "az-AZ" : "az-AZ",
@@ -87,7 +87,7 @@ def languageMapCrowdin = [
         "zh-TW" : "zh-TW"
 ]
 
-String getMappedLocalesCrowdin = languageMapCrowdin.values().inspect().toString()
+project.ext.getMappedLocalesCrowdin = languageMapCrowdin.values().inspect().toString()
         .replace("[", "\"")
         .replace("]", "\"")
 

@@ -86,7 +86,7 @@ pipeline {
 
         stage('Promote APK to production') {
 			steps {
-                sh "./fastlane promote_Catroid"
+                sh "fastlane android promote_Catroid"
 			}
 		}
 	}

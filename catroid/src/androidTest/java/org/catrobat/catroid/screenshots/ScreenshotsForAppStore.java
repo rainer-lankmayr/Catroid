@@ -150,12 +150,12 @@ public class ScreenshotsForAppStore {
 //		Screengrab.setDefaultScreenshotStrategy(new FalconScreenshotStrategy(mActivityTestRule.getActivity()));
 
 //		mActivityTestRule.launchActivity(null);
+		sleep(1000);
 	}
 
 	@Test
 	public void createScreenshotsApp() {
 		onView(withText(R.string.main_menu_programs)).check(matches(isDisplayed()));
-		sleep(500);
 
 		takeScreenshot("screenshot1");
 
