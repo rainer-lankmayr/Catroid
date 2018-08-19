@@ -67,10 +67,18 @@ check.dependsOn 'pmd'
 // Furthermore these installations do not interfere with the actual Catroid app.
 if (project.hasProperty('independent')) {
     def today = new Date()
-    appId += '.independent_' + today.format('YYYYMMdd_HHmm')
+    //TODO: restore appId
+//    appId += '.independent_' + today.format('YYYYMMdd_HHmm')
+    appId += '.independent_20180816_1756'
     appName = property('independent') ?: 'Code ' + today.format('MMdd HH:mm')
     manifestAppName = appName
 }
+
+def useAndroidLocales() {
+    def value = project.getProperties().get("useAndroidLocales")
+    return value != null ? value : "false"
+}
+
 ant.copy(file: 'google-services-template.json', tofile: 'google-services.json', overwrite: true)
 ant.replace(file: 'google-services.json', token: '@appId@', value: appId)
 
@@ -134,13 +142,13 @@ android {
 
     signingConfigs {
         release {
-            // dummyPassword will be replaced by task askForSigningPasswords
+            // password will be added by task askForSigningPasswords
             //storeFile file(System.getenv("KEYSTORE"))
             //keyAlias System.getenv("KEY_ALIAS")
             storeFile file("../fastlane/rainer.jks")
-            storePassword "dummyPassword"
+            storePassword ""
             keyAlias "my-key"
-            keyPassword "dummyPassword"
+            keyPassword ""
         }
     }
 
@@ -162,6 +170,7 @@ android {
             buildConfigField "boolean", "FEATURE_CAST_ENABLED", "true"
             buildConfigField "boolean", "FEATURE_CLOUD_MESSAGING_ENABLED", "true"
             buildConfigField "boolean", "CRASHLYTICS_CRASH_REPORT_ENABLED", "true"
+            buildConfigField "boolean", "USE_ANDROID_LOCALES_FOR_SCREENSHOTS", useAndroidLocales()
             resValue "string", "SNACKBAR_HINTS_ENABLED", "false"
             ext.enableCrashlytics = false
             testCoverageEnabled = project.hasProperty('enableCoverage')
@@ -182,6 +191,7 @@ android {
             buildConfigField "boolean", "FEATURE_CAST_ENABLED", "true"
             buildConfigField "boolean", "FEATURE_CLOUD_MESSAGING_ENABLED", "false"
             buildConfigField "boolean", "CRASHLYTICS_CRASH_REPORT_ENABLED", "true"
+            buildConfigField "boolean", "USE_ANDROID_LOCALES_FOR_SCREENSHOTS", "false"
             resValue "string", "SNACKBAR_HINTS_ENABLED", "true"
 
             signingConfig signingConfigs.release

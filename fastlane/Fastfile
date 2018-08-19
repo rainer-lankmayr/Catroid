@@ -80,7 +80,6 @@ platform :android do
       track_promote_to:           'production',
       json_key:                   './fastlane/api-8052931068940264178-440992-c9208c6f1732.json',
       metadata_path:              './fastlane/metadata/android',
-      apk_paths:                  './catroid/build/outputs/apk/catroid-catroid-release-signed-aligned.apk',
       skip_upload_apk:            'true',
       skip_upload_metadata:       'true',
       skip_upload_images:         'true',
