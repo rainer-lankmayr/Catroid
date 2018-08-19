@@ -75,7 +75,7 @@ def languageMapCrowdin = [
         "sk-SK" : "sk",
         "sl-SI" : "sl",
         "sr-CS" : "sr",
-        "sv-SE" : "sv-SV",
+        "sv-SE" : "sv-SE",
         "sw-KE" : "sw",
         "ta-IN" : "ta-IN",
         "te-IN" : "te-IN",
