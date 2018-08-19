@@ -526,9 +526,11 @@ public class SettingsFragment extends PreferenceFragment {
 				? getLocaleFromLanguageTag(languageTag)
 				: new Locale(CatroidApplication.defaultSystemLanguage);
 
-		Locale.setDefault(mLocale);
-		updateLocale(activity, mLocale);
-		updateLocale(activity.getApplicationContext(), mLocale);
+		if (!BuildConfig.USE_ANDROID_LOCALES_FOR_SCREENSHOTS) {
+			Locale.setDefault(mLocale);
+			updateLocale(activity, mLocale);
+			updateLocale(activity.getApplicationContext(), mLocale);
+		}
 	}
 
 	public static void updateLocale(Context context, Locale locale) {
