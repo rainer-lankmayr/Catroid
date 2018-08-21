@@ -96,6 +96,27 @@ def createCrowdinDirectory() {
     crowdinDir.mkdirs()
 }
 
+def loadCrowdinKey() {
+    String key = ""
+    logger.lifecycle("Trying to read key from parameters given ...")
+    if (project.hasProperty("CrowdinKey")) {
+        logger.lifecycle("Key found")
+        key = project.getProperties().get("CrowdinKey")
+    } else {
+        logger.lifecycle("Trying to read key from file ...")
+        // TODO: Crowdin key is loaded from plaintext. Needs to be loaded from a secure storage.
+        try {
+            key = new File(project.ext.crowdinKeyPath).text
+        } catch (IOException e) {
+            logger.error("You have to provide the crowdin key in the following file " +
+                    project.ext.crowdinKeyPath + ".")
+            throw new GradleException("Crowdin keyfile not found")
+        }
+        logger.lifecycle("Key found")
+    }
+    return key
+}
+
 task cleanCrowdin(type: Delete) {
     description "Delete objects in crowdin folder."
     group releasePreparationSubGroup
@@ -110,15 +131,7 @@ task downloadCrowdinFiles() {
 
     doLast {
         createCrowdinDirectory()
-        String key = ""
-        // TODO: Crowdin key is loaded from plaintext. Needs to be loaded from a secure storage.
-        try {
-            key = new File(project.ext.crowdinKeyPath).text
-        } catch (IOException e) {
-            logger.error("You have to provide the crowdin key in the following file " +
-                    project.ext.crowdinKeyPath + ".")
-            throw new GradleException("Crowdin keyfile not found")
-        }
+        String key = loadCrowdinKey()
 
         logger.lifecycle("Downloading crowdin translations ...")
         exec {
