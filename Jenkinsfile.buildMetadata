@@ -92,26 +92,14 @@ pipeline {
 		}
 
         stage('Upload Metadata') {
-            steps {
-                sh "./fastlane/writeJson.sh"
-			}
 			steps {
 				sh "./gradlew uploadMetadataToPlayStore"
-			}
-            steps {
-                sh "./fastlane/cleanJson.sh"
 			}
 		}
 
         stage('Promote APK to production') {
-            steps {
-                sh "./fastlane/writeJson.sh"
-			}
 			steps {
                 sh "fastlane android promote_Catroid"
-			}
-            steps {
-                sh "./fastlane/cleanJson.sh"
 			}
 		}
 	}

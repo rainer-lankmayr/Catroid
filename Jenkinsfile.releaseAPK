@@ -83,16 +83,8 @@ pipeline {
 		}
 
         stage('Upload AKP to Alpha') {
-            steps {
-                sh "./fastlane/writeJson.sh"
-			}
-            
 			steps {
                 sh "./gradlew uploadAPKToPlayStore"
-			}
-            
-            steps {
-                sh "./fastlane/cleanJson.sh"
 			}
 		}
 	}
