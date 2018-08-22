@@ -145,7 +145,7 @@ android {
             // password will be added by task askForSigningPasswords
             //storeFile file(System.getenv("KEYSTORE"))
             //keyAlias System.getenv("KEY_ALIAS")
-            storeFile file("../fastlane/rainer.jks")
+            storeFile file("../fastlane/keystore.p12")
             storePassword ""
             keyAlias "my-key"
             keyPassword ""
