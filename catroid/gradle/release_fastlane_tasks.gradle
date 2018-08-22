@@ -65,7 +65,7 @@ task makeScreenshotsPocketCode(type:Exec) {
 
     String fastlaneCommand = "fastlane screengrab" +
             " --app_package_name 'org.catrobat.catroid'" +
-            " --use_tests_in_packages 'org.catrobat.catroid.screenshots'" +
+            " --use_tests_in_packages 'org.catrobat.catroid.screenshots.catroid'" +
             " --app_apk_path './catroid/build/outputs/apk/catroid/debug/catroid-catroid-debug.apk'" +
             " --tests_apk_path './catroid/build/outputs/apk/androidTest/catroid/debug/catroid-catroid-debug-androidTest.apk'" +
             " --test_instrumentation_runner 'android.support.test.runner.AndroidJUnitRunner'" +
