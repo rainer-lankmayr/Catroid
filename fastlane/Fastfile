@@ -42,7 +42,7 @@ platform :android do
     upload_to_play_store(
       package_name:               'org.catrobat.catroid.independent_20180816_1756',
       track:                      'alpha',
-      json_key:                   './fastlane/api-8052931068940264178-440992-c9208c6f1732.json',
+      json_key:                   './fastlane/googleplay-key.json',
       metadata_path:              './fastlane/metadata/android',
       skip_upload_apk:            'true',
       skip_upload_metadata:       'false',
@@ -59,7 +59,8 @@ platform :android do
     upload_to_play_store(
       package_name:               'org.catrobat.catroid.independent_20180816_1756',
       track:                      'alpha',
-      json_key:                   './fastlane/api-8052931068940264178-440992-c9208c6f1732.json',
+      #json_key:                   './fastlane/googleplay-key.json',
+      json_key:                   './fastlane/test.json',
       metadata_path:              './fastlane/metadata/android',
       apk_paths:                  './catroid/build/outputs/apk/catroid/release/catroid-catroid-release.apk',
       skip_upload_apk:            'false',
@@ -78,7 +79,7 @@ platform :android do
       package_name:               'org.catrobat.catroid.independent_20180816_1756',
       track:                      'alpha',
       track_promote_to:           'production',
-      json_key:                   './fastlane/api-8052931068940264178-440992-c9208c6f1732.json',
+      json_key:                   './fastlane/googleplay-key.json',
       metadata_path:              './fastlane/metadata/android',
       skip_upload_apk:            'true',
       skip_upload_metadata:       'true',
