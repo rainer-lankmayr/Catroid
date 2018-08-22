@@ -2,6 +2,10 @@
 
 pipeline {
 	agent {
+        node { 
+            label 'Slave1-HardwareSensorBox' 
+        }
+
 		dockerfile {
 			filename 'Dockerfile.jenkins'
 			// 'docker build' would normally copy the whole build-dir to the container, changing the
@@ -79,8 +83,16 @@ pipeline {
 		}
 
         stage('Upload AKP to Alpha') {
+            steps {
+                sh "./fastlane/writeJson.sh"
+			}
+            
 			steps {
                 sh "./gradlew uploadAPKToPlayStore"
+			}
+            
+            steps {
+                sh "./fastlane/cleanJson.sh"
 			}
 		}
 	}
