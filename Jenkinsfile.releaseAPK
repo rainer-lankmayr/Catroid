@@ -69,7 +69,12 @@ pipeline {
         stage('Sign APK') {
 			steps {
                 // Build, zipalign and sign releasable APK
-                sh "./gradlew assembleCatroidRelease -Pindependent="org.catrobat.catroid.independent_20180816_1756"" //TODO: remove test package name
+                //TODO: remove test package name
+                sh '''./gradlew assembleCatroidRelease 
+                    -PSigningKeystorePassword=$SigningKeystorePassword 
+                    -PSigningKeyPassword=$SigningKeyPassword 
+                    -Pindependent="org.catrobat.catroid.independent_20180816_1756"
+                ''' 
 			}
 		}
 

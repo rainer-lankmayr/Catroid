@@ -26,6 +26,15 @@ import groovy.swing.SwingBuilder
 final String releasePreparationMainGroup = "release preparation main"
 final String releasePreparationSubGroup = "release preparation sub"
 
+def loadSigningCredentials() {
+    if (project.hasProperty("SigningKeystorePassword") && project.hasProperty("SigningKeyPassword")) {
+        android.signingConfigs.release.storePassword = project.getProperties().get("SigningKeystorePassword")
+        android.signingConfigs.release.keyPassword = project.getProperties().get("SigningKeyPassword")
+    } else {
+        logger.warn("Signing credentials not found.")
+    }
+}
+
 task askForSigningPasswordsCLI {
     description "Ask for user-input to access keystore."
     group releasePreparationSubGroup
@@ -80,6 +89,7 @@ task askForSigningPasswords {
 
 tasks.whenTaskAdded { theTask ->
     if (theTask.name.equals("assembleCatroidRelease")) {
-        theTask.dependsOn "askForSigningPasswords"
+//        theTask.dependsOn "askForSigningPasswords"
+        loadSigningCredentials()
     }
 }
