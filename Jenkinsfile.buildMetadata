@@ -74,13 +74,15 @@ pipeline {
 
         stage('Create Screenshots') {
             steps {
-				sh "./buildScripts/build_helper_start_emulator"
-			}
-			steps {
-				sh "./gradlew generateScreenshotsPocketCode"
-			}
+                step{
+				    sh "./buildScripts/build_helper_start_emulator"
+			    }
+			    step {
+				    sh "./gradlew generateScreenshotsPocketCode"
+			    }
+            }
             post {
-				always {
+			    always {
 					// stop/kill emulator
 					sh "./buildScripts/build_helper_stop_emulator"
 				}
