@@ -27,9 +27,12 @@ final String releasePreparationMainGroup = "release preparation main"
 final String releasePreparationSubGroup = "release preparation sub"
 
 def loadSigningCredentials() {
-    if (project.hasProperty("SigningKeystorePassword") && project.hasProperty("SigningKeyPassword")) {
+    if (project.hasProperty("SigningKeystore") && project.hasProperty("SigningKeystorePassword") &&
+            project.hasProperty("SigningKeyPassword")) {
+//        android.signingConfigs.release.storeFile = project.getProperties().get("SigningKeystore")
         android.signingConfigs.release.storePassword = project.getProperties().get("SigningKeystorePassword")
         android.signingConfigs.release.keyPassword = project.getProperties().get("SigningKeyPassword")
+//        project = project.getProperties().get("SigningKeyPassword")
     } else {
         logger.warn("Signing credentials not found.")
     }
