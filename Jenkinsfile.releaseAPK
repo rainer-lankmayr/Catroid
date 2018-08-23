@@ -71,7 +71,7 @@ pipeline {
                 // Build, zipalign and sign releasable APK
                 //TODO: remove test package name
                 sh '''./gradlew assembleCatroidRelease 
-                    -PSigningKeystore=$c4f690ba-86e1-4885-82e4-73c1cbc5b9d6 
+                    -PSigningKeystore=$SigningKeystore 
                     -PSigningKeystorePassword=$SigningKeystorePassword 
                     -PSigningKeyPassword=$SigningKeyPassword 
                     -Pindependent="org.catrobat.catroid.independent_20180816_1756"
