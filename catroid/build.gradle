@@ -74,6 +74,11 @@ if (project.hasProperty('independent')) {
     manifestAppName = appName
 }
 
+// TODO just a dummy as workaround
+if (!project.hasProperty("SigningKeystore")) {
+    ext.SigningKeystore = "dummy"
+}
+
 def useAndroidLocales() {
     def value = project.getProperties().get("useAndroidLocales")
     return value != null ? value : "false"
@@ -142,10 +147,11 @@ android {
 
     signingConfigs {
         release {
-            // password will be added by task askForSigningPasswords
+            // passwords will be added by task askForSigningPasswords
             //storeFile file(System.getenv("KEYSTORE"))
             //keyAlias System.getenv("KEY_ALIAS")
-            storeFile file("../fastlane/keystore.p12")
+//            storeFile file(project["SigningKeystore"])
+            storeFile file(project["SigningKeystore"])
             storePassword ""
             keyAlias "my-key"
             keyPassword ""
