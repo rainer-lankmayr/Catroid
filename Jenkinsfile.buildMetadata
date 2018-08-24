@@ -72,9 +72,14 @@ pipeline {
 			}
 		}
 
+        stage('Start emulator') {
+			steps {
+				sh "./buildScripts/build_helper_start_emulator"
+			}
+		}
+
         stage('Create Screenshots') {
             steps {          
-				sh "./buildScripts/build_helper_start_emulator"
 				sh "./gradlew generateScreenshotsPocketCode"
             }
             post {
