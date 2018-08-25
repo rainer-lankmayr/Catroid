@@ -17,11 +17,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 		openssh-client \
 	&& rm -rf /var/lib/apt/lists/*
 ## Install Fastlane
-##RUN apt-get update && apt-get install -y --no-install-recommends \
-##        ruby-full \
-##        build-essential
-##Run /bin/bash -l -c "gem update --system && gem install fastlane -NV"
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
         rubygems \ 
         ruby-dev \
@@ -30,6 +25,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         less \
     && rm -rf /var/lib/apt/lists/* \
     && gem update --system \
-    && gem install fastlane -NV
+    && gem install fastlane -NV \
+    && apt-get purge -y --auto-remove \
+        ruby-dev \
+        g++ \
+        make
 ## add the 'Jenkins' user
 RUN groupadd -g $GROUP_ID user && useradd -M -u $USER_ID -g $GROUP_ID -d / -s /usr/sbin/nologin user
