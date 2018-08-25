@@ -68,7 +68,9 @@ pipeline {
 
 		stage('Setup Translations') {
 			steps {
-				sh "./gradlew generateCrowdinMetadata -PCrowdinKey=$CrowdinKey"
+			    withCredentials([string(credentialsId: '0871b6a5-3e2d-451b-ab47-55321b6fa35d', variable: 'CrowdinKey')]){
+				    sh "./gradlew generateCrowdinMetadata -PCrowdinKey=$CrowdinKey"
+			    }
 			}
 		}
 
