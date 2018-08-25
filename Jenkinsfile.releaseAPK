@@ -76,7 +76,7 @@ pipeline {
 
         stage('Upload AKP to Alpha') {
 			steps {
-                #sh "./gradlew uploadAPKToPlayStore"
+                //sh "./gradlew uploadAPKToPlayStore"
 			}
 		}
 	}
