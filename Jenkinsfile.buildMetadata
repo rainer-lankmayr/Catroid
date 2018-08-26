@@ -72,9 +72,9 @@ pipeline {
 				//    sh "./gradlew generateCrowdinMetadata -PCrowdinKey=$CROWDIN_KEY"
 			    //}
 			    sh '''
-			        "set +x"
-			        "./gradlew generateCrowdinMetadata -PCrowdinKey=$CrowdinKey"
-			        "set -x"
+			        set +x
+			        ./gradlew generateCrowdinMetadata -PCrowdinKey=$CrowdinKey
+			        set -x
 			    '''
 			}
 		}
