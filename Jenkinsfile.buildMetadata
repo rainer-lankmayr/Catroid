@@ -71,10 +71,10 @@ pipeline {
 			    //withCredentials([string(credentialsId: '0871b6a5-3e2d-451b-ab47-55321b6fa35d', variable: 'CROWDIN_KEY')]){
 				//    sh "./gradlew generateCrowdinMetadata -PCrowdinKey=$CROWDIN_KEY"
 			    //}
-			    '''
-			    sh "set +x"
-			    sh "./gradlew generateCrowdinMetadata -PCrowdinKey=$CrowdinKey"
-			    sh "set -x"
+			    sh '''
+			        "set +x"
+			        "./gradlew generateCrowdinMetadata -PCrowdinKey=$CrowdinKey"
+			        "set -x"
 			    '''
 			}
 		}
