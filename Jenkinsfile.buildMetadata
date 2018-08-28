@@ -81,7 +81,8 @@ pipeline {
 		}
 
         stage('Create Screenshots') {
-            steps {          
+            steps {
+                sh "echo HOME is set to $HOME"
 				sh "./gradlew generateScreenshotsPocketCode"
             }
             post {
