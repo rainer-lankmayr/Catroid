@@ -125,7 +125,7 @@ task uploadMetadataToPlayStore(type:Exec) {
     group releasePreparationMainGroup
 
 //    workingDir projectDir.parent
-    workingDir project.rootDir()
+    workingDir project.rootDir
 
     doFirst { logger.lifecycle("Uploading Metadata to Play Store ...") }
     executable "sh"
