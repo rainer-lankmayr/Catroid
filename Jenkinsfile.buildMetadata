@@ -83,10 +83,10 @@ pipeline {
         stage('Create Screenshots') {
             steps {
                 sh "echo HOME is set to $HOME"
+                sh "echo JAVA_HOME: $JAVA_HOME"
+                sh "echo JAVA_TOOL_OPTIONS: $JAVA_TOOL_OPTIONS"
                 sh "ls -l"
-                sh "cd /home/catroid"
-                sh "ls -l"
-                sh "cd /home/catroid && ls -l"
+                sh "fastlane init"
 				sh "./gradlew generateScreenshotsPocketCode"
             }
             post {
