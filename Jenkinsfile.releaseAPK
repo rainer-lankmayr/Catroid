@@ -88,10 +88,9 @@ pipeline {
         stage('Upload AKP to Alpha') {
 			steps {
 			    //sh "echo upload disabled"
-			    sh '''
-			        
+			    sh '''			        
 			        echo $HOME
-			        HOME= fastlane promote_Catroid
+			        fastlane promote_Catroid
 		        '''
 			    //sh "fastlane promote_Catroid"
                 //sh "./gradlew uploadAPKToPlayStore"
