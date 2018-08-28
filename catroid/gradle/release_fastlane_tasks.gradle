@@ -60,7 +60,7 @@ task makeScreenshotsPocketCode(type:Exec) {
     dependsOn "assembleAndroidTest"
 
 //    workingDir projectDir.parent
-    workingDir project.rootDir()
+    workingDir project.rootDir
 
     String assembleCommand = "./gradlew assembleCatroidDebug -PuseAndroidLocales=true"
 
