@@ -59,7 +59,8 @@ task makeScreenshotsPocketCode(type:Exec) {
     group releasePreparationSubGroup
     dependsOn "assembleAndroidTest"
 
-    workingDir projectDir.parent
+//    workingDir projectDir.parent
+    workingDir project.rootDir()
 
     String assembleCommand = "./gradlew assembleCatroidDebug -PuseAndroidLocales=true"
 
@@ -123,7 +124,8 @@ task uploadMetadataToPlayStore(type:Exec) {
     description "Uploads the fastlane metadata folder to Goggle Play Store."
     group releasePreparationMainGroup
 
-    workingDir projectDir.parent
+//    workingDir projectDir.parent
+    workingDir project.rootDir()
 
     doFirst { logger.lifecycle("Uploading Metadata to Play Store ...") }
     executable "sh"
