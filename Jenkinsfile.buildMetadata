@@ -82,9 +82,6 @@ pipeline {
 
         stage('Create Screenshots') {
             steps {
-                sh "echo HOME is set to $HOME"
-                sh "ls -l"
-                //sh "fastlane init"
 				sh "./gradlew generateScreenshotsPocketCode"
             }
             post {
