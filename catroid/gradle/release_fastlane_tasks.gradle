@@ -22,7 +22,7 @@
  */
 
 project.ext {
-    fastlanePath = projectDir.parent + "/fastlane"
+    fastlanePath = project.rootDir + "/fastlane"
     fastlaneMetadataPath = fastlanePath + "/metadata"
     fastlaneAndroidPath = fastlanePath + "/metadata/android"
 }
@@ -41,11 +41,6 @@ String getMappedLocalesForScreenshots = languageMapScreenshots.values().collect 
     "'" + it.first() + "'"
 }.toString().replace("[", "\"").replace("]", "\"")
 
-def createFastlaneDirectory() {
-    final File faslaneDir = new File(fastlanePath)
-    faslaneDir.mkdirs()
-}
-
 task cleanFastlane(type: Delete) {
     description "Delete objects in fastlane folder."
     group releasePreparationSubGroup
@@ -59,7 +54,6 @@ task makeScreenshotsPocketCode(type:Exec) {
     group releasePreparationSubGroup
     dependsOn "assembleAndroidTest"
 
-//    workingDir projectDir.parent
     workingDir project.rootDir
 
     String assembleCommand = "./gradlew assembleCatroidDebug -PuseAndroidLocales=true"
@@ -124,7 +118,6 @@ task uploadMetadataToPlayStore(type:Exec) {
     description "Uploads the fastlane metadata folder to Goggle Play Store."
     group releasePreparationMainGroup
 
-//    workingDir projectDir.parent
     workingDir project.rootDir
 
     doFirst { logger.lifecycle("Uploading Metadata to Play Store ...") }
@@ -137,7 +130,7 @@ task uploadAPKToPlayStore(type:Exec) {
     description "Uploads the Catroid APK to Goggle Play Store."
     group releasePreparationMainGroup
 
-    workingDir projectDir.parent
+    workingDir project.rootDir
 
     doFirst { logger.lifecycle("Uploading Metadata to Play Store ...") }
     executable "sh"

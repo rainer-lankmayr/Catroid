@@ -82,7 +82,7 @@ if (!project.hasProperty("SigningKeystore")) {
 
 def useAndroidLocales() {
     def value = project.getProperties().get("useAndroidLocales")
-    return value != null ? value : "false"
+    return value != null ? "true" : "false"
 }
 
 ant.copy(file: 'google-services-template.json', tofile: 'google-services.json', overwrite: true)
@@ -101,13 +101,10 @@ android {
 
     signingConfigs {
         release {
-            // passwords will be added by task askForSigningPasswords
-            //storeFile file(System.getenv("KEYSTORE"))
-            //keyAlias System.getenv("KEY_ALIAS")
-//            storeFile file(project["SigningKeystore"])
+            // credentials loaded in release_task.gradle
             storeFile file(project["SigningKeystore"])
             storePassword ""
-            keyAlias "my-key"
+            keyAlias ""
             keyPassword ""
         }
     }
