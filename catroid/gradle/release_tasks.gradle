@@ -28,11 +28,11 @@ final String releasePreparationSubGroup = "release preparation sub"
 
 def loadSigningCredentials() {
     if (project.hasProperty("SigningKeystore") && project.hasProperty("SigningKeystorePassword") &&
-            project.hasProperty("SigningKeyPassword")) {
+            project.hasProperty("SigningKeyAlias") && project.hasProperty("SigningKeyPassword")) {
 //        android.signingConfigs.release.storeFile = project.getProperties().get("SigningKeystore")
         android.signingConfigs.release.storePassword = project.getProperties().get("SigningKeystorePassword")
+        android.signingConfigs.release.keyAlias = project.getProperties().get("SigningKeyAlias")
         android.signingConfigs.release.keyPassword = project.getProperties().get("SigningKeyPassword")
-//        project = project.getProperties().get("SigningKeyPassword")
     } else {
         logger.warn("Signing credentials not found.")
     }
@@ -92,7 +92,6 @@ task askForSigningPasswords {
 
 tasks.whenTaskAdded { theTask ->
     if (theTask.name.equals("assembleCatroidRelease")) {
-//        theTask.dependsOn "askForSigningPasswords"
         loadSigningCredentials()
     }
 }

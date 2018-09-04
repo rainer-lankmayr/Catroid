@@ -22,7 +22,7 @@
  */
 
 project.ext {
-    crowdinPath = projectDir.parent + "/crowdin"
+    crowdinPath = project.rootDir + "/crowdin"
     crowdinKeyPath = crowdinPath + "/keyfile"
     crowdinArchivePath = crowdinPath + "/crowdin.zip"
     crowdinExtractedPath = crowdinPath + "/extracted"
