@@ -75,6 +75,32 @@ task makeScreenshotsPocketCode(type:Exec) {
     doLast { logger.lifecycle("Taking screenshots for App Store done.") }
 }
 
+task makeScreenshotsLunaAndCat(type:Exec) {
+    description "Creates Screenshots for the App Store with Fastlane/Screengrab."
+    group releasePreparationSubGroup
+    dependsOn "assembleAndroidTest"
+
+    workingDir project.rootDir
+
+    String assembleCommand = "./gradlew assembleLunaAndCatDebug -PuseAndroidLocales=true"
+
+    String fastlaneCommand = "fastlane screengrab" +
+            " --app_package_name 'org.catrobat.catroid'" +
+            " --use_tests_in_packages 'org.catrobat.catroid.screenshots.lunaAndCat'" +
+            " --app_apk_path './catroid/build/outputs/apk/lunaAndCat/debug/catroid-lunaAndCat-debug.apk'" +
+            " --tests_apk_path './catroid/build/outputs/apk/androidTest/lunaAndCat/debug/catroid-lunaAndCat-debug-androidTest.apk'" +
+            " --test_instrumentation_runner 'android.support.test.runner.AndroidJUnitRunner'" +
+            " --clear_previous_screenshots true " +
+            " --exit_on_test_failure false " +
+            " --locales " + testLocales
+//            " --locales " + project.ext.getMappedLocalesCrowdin
+
+    doFirst { logger.lifecycle("Taking screenshots for App Store ...") }
+    executable "sh"
+    args("-c", assembleCommand + ";" + fastlaneCommand)
+    doLast { logger.lifecycle("Taking screenshots for App Store done.") }
+}
+
 task renameScreenshotFolders() {
     description "Rename Screenshot folders to match Play Store locales."
     group releasePreparationSubGroup
@@ -114,6 +140,17 @@ task generateScreenshotsPocketCode() {
     }
 }
 
+task generateScreenshotsLunaAndCat() {
+    description "Run all tasks to generate Screenshots for the App Store."
+    group releasePreparationMainGroup
+    dependsOn makeScreenshotsLunaAndCat, renameScreenshotFolders
+
+    doLast {
+        logger.lifecycle("Generating Screenshots done.")
+        logger.lifecycle("Path: " + project.ext.fastlaneMetadataPath)
+    }
+}
+
 task uploadMetadataToPlayStore(type:Exec) {
     description "Uploads the fastlane metadata folder to Goggle Play Store."
     group releasePreparationMainGroup
@@ -139,6 +176,7 @@ task uploadAPKToPlayStore(type:Exec) {
 }
 
 makeScreenshotsPocketCode.shouldRunAfter(unpackCrowdinFiles)
+makeScreenshotsLunaAndCat.shouldRunAfter(unpackCrowdinFiles)
 renameScreenshotFolders.mustRunAfter(makeScreenshotsPocketCode)
 uploadMetadataToPlayStore.mustRunAfter(generateAppStoreInfo, renameScreenshotFolders)
 uploadAPKToPlayStore.mustRunAfter(uploadMetadataToPlayStore)
