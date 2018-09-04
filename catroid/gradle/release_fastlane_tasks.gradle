@@ -22,7 +22,7 @@
  */
 
 project.ext {
-    fastlanePath = project.rootDir + "/fastlane"
+    fastlanePath = project.rootDir.path + "/fastlane"
     fastlaneMetadataPath = fastlanePath + "/metadata"
     fastlaneAndroidPath = fastlanePath + "/metadata/android"
 }
