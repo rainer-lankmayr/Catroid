@@ -198,8 +198,13 @@ public class ScreenshotsForAppStore {
 //		takeScreenshot("screenshot10");
 //	}
 
+//	@Test
+//	public void createScreenshotsExplore() {
+//
+//	}
+
 	@Test
-	public void createScreenshotsExplore() {
+	public void createScreenshotsWeb() {
 		onView(withText(R.string.main_menu_web)).perform(click());
 		sleep(7000);
 
