@@ -86,6 +86,15 @@ def useAndroidLocales() {
 
 ant.copy(file: 'google-services-template.json', tofile: 'google-services.json', overwrite: true)
 ant.replace(file: 'google-services.json', token: '@appId@', value: appId)
+if (project.hasProperty('firebaseApiKey')) {
+    ant.replace(file: 'google-services.json', token: '@apiKey@', value: project.getProperties().get('firebaseApiKey'))
+}
+if (project.hasProperty('fabricApiKey')) {
+    ant.replace(file: 'fabric.properties', token: '@apiKey@', value: project.getProperties().get('fabricApiKey'))
+}
+if (project.hasProperty('fabricApiSecret')) {
+    ant.replace(file: 'fabric.properties', token: '@apiSecret@', value: project.getProperties().get('fabricApiSecret'))
+}
 
 jacoco.toolVersion = "0.8.1"
 
