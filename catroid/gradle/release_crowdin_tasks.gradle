@@ -37,7 +37,9 @@ final String releasePreparationMainGroup = "release preparation main"
 final String releasePreparationSubGroup = "release preparation sub"
 
 project.ext.languageMapCrowdin = [
+        // English should be first. Project object names will be set to first language launched.
         // crowdin : Android
+        "en-US" : "en-US", // translations missing,
         "ar-SA" : "ar",
         "az-AZ" : "az-AZ",
         "bg-BG" : "bg",
@@ -48,7 +50,7 @@ project.ext.languageMapCrowdin = [
         "el-GR" : "el-GR",
         "en-AU" : "en-AU",
         "en-CA" : "en-CA",
-        "en-GB" : "en-GB", // what about en-US
+        "en-GB" : "en-GB",
         "es-ES" : "es-ES",
         "fa-AF" : "fa",
         "fr-FR" : "fr-FR",
@@ -99,9 +101,9 @@ def createCrowdinDirectory() {
 def loadCrowdinKey() {
     String key = ""
     logger.lifecycle("Trying to read key from parameters given ...")
-    if (project.hasProperty("CrowdinKey")) {
+    if (project.hasProperty("crowdinKey")) {
         logger.lifecycle("Key found")
-        key = project.getProperties().get("CrowdinKey")
+        key = project.getProperties().get("crowdinKey")
     } else {
         logger.lifecycle("Trying to read key from file ...")
         // TODO: Crowdin key is loaded from plaintext. Needs to be loaded from a secure storage.

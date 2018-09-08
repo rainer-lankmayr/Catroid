@@ -75,8 +75,8 @@ if (project.hasProperty('independent')) {
 }
 
 // TODO just a dummy as workaround
-if (!project.hasProperty("SigningKeystore")) {
-    ext.SigningKeystore = "dummy"
+if (!project.hasProperty("signingKeystore")) {
+    ext.signingKeystore = "dummy"
 }
 
 def useAndroidLocales() {
@@ -90,10 +90,13 @@ if (project.hasProperty('firebaseApiKey')) {
     ant.replace(file: 'google-services.json', token: '@apiKey@', value: project.getProperties().get('firebaseApiKey'))
 }
 if (project.hasProperty('fabricApiKey')) {
-    ant.replace(file: 'fabric.properties', token: '@apiKey@', value: project.getProperties().get('fabricApiKey'))
+    ant.replace(file: 'fabric.properties', token: '0123456789012345678901234567890123456789',
+            value: project.getProperties().get('fabricApiKey'))
 }
 if (project.hasProperty('fabricApiSecret')) {
-    ant.replace(file: 'fabric.properties', token: '@apiSecret@', value: project.getProperties().get('fabricApiSecret'))
+    ant.replace(file: 'fabric.properties',
+            token: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+            value: project.getProperties().get('fabricApiSecret'))
 }
 
 jacoco.toolVersion = "0.8.1"
@@ -161,7 +164,7 @@ android {
     signingConfigs {
         release {
             // credentials loaded in release_task.gradle
-            storeFile file(project["SigningKeystore"])
+            storeFile file(project["signingKeystore"])
             storePassword ""
             keyAlias ""
             keyPassword ""
