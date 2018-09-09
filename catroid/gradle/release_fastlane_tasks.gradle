@@ -54,7 +54,7 @@ task makeScreenshotsPocketCode(type:Exec) {
     group releasePreparationSubGroup
     dependsOn "assembleAndroidTest"
 
-    workingDir project.rootDir
+    workingDir project.rootDir.path
 
     String assembleCommand = "./gradlew assembleCatroidDebug -PuseAndroidLocales=true"
 
@@ -66,8 +66,8 @@ task makeScreenshotsPocketCode(type:Exec) {
             " --test_instrumentation_runner 'android.support.test.runner.AndroidJUnitRunner'" +
             " --clear_previous_screenshots true " +
             " --exit_on_test_failure false " +
-//            " --locales " + testLocales
-            " --locales " + project.ext.getMappedLocalesCrowdin
+            " --locales " + testLocales
+//            " --locales " + project.ext.getMappedLocalesCrowdin
 
     doFirst { logger.lifecycle("Taking screenshots for App Store ...") }
     executable "sh"
@@ -80,7 +80,7 @@ task makeScreenshotsLunaAndCat(type:Exec) {
     group releasePreparationSubGroup
     dependsOn "assembleAndroidTest"
 
-    workingDir project.rootDir
+    workingDir project.rootDir.path
 
     String assembleCommand = "./gradlew assembleLunaAndCatDebug -PuseAndroidLocales=true"
 
@@ -155,7 +155,7 @@ task uploadMetadataToPlayStore(type:Exec) {
     description "Uploads the fastlane metadata folder to Goggle Play Store."
     group releasePreparationMainGroup
 
-    workingDir project.rootDir
+    workingDir project.rootDir.path
 
     doFirst { logger.lifecycle("Uploading Metadata to Play Store ...") }
     executable "sh"
@@ -167,7 +167,7 @@ task uploadAPKToPlayStore(type:Exec) {
     description "Uploads the Catroid APK to Goggle Play Store."
     group releasePreparationMainGroup
 
-    workingDir project.rootDir
+    workingDir project.rootDir.path
 
     doFirst { logger.lifecycle("Uploading Metadata to Play Store ...") }
     executable "sh"
