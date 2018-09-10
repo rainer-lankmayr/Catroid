@@ -66,7 +66,7 @@ pipeline {
 			}
 		}
 
-        stage('Sign APK') {
+        stage('Build signed APK') {
 			steps {
                 // Build, zipalign and sign releasable APK
                 //TODO: remove test package name

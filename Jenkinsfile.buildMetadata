@@ -69,12 +69,12 @@ pipeline {
 		stage('Setup Translations') {
 			steps {
 			    withCredentials([string(credentialsId: '0871b6a5-3e2d-451b-ab47-55321b6fa35d', variable: 'CROWDIN_KEY')]){
-				    sh "./gradlew generateCrowdinMetadata -PcrowdinKey=$CROWDIN_KEY"
+				    sh "./gradlew generateCrowdinMetadata -PcrowdinKey=$crowdinKey"
 			    }
 			}
 		}
 
-        stage('Start emulator') {
+      stage('Start emulator') {
 			steps {
 				sh "./buildScripts/build_helper_start_emulator"
 			}
@@ -82,7 +82,7 @@ pipeline {
 
         stage('Create Screenshots') {
             steps {
-				sh "./gradlew generateScreenshotsPocketCode"
+			    sh "./gradlew generateScreenshotsPocketCode"
             }
             post {
 			    always {
@@ -91,14 +91,34 @@ pipeline {
 				}
 			}
 		}
+		
+		stage('Review') {
+            //agent none
+            options {
+                timeout(time: 30, unit: 'MINUTES') 
+            }
+            steps {
+                script {
+                    env.APPROVE_DEPLOY = input message: 'User input required',
+                        parameters: [choice(name: 'Deploy', choices: 'no\nyes', 
+                        description: 'Please review the Screenshots! Do you want to deploy this to Google Play?')]
+                }
+            }
+        }
 
         stage('Upload Metadata') {
+            when {
+                environment name: 'APPROVE_DEPLOY', value: 'yes'
+            }
 			steps {
 				sh "./gradlew uploadMetadataToPlayStore"
 			}
 		}
 
         stage('Promote APK to production') {
+            when {
+                environment name: 'APPROVE_DEPLOY', value: 'yes'
+            }
 			steps {
                 sh "fastlane android promote_Catroid"
 			}
