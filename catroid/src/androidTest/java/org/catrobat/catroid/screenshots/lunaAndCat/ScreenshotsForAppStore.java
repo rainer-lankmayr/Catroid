@@ -27,6 +27,7 @@ import android.preference.PreferenceManager;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.DataInteraction;
 import android.support.test.espresso.ViewInteraction;
+import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.espresso.web.webdriver.Locator;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
@@ -36,9 +37,13 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 
 import org.catrobat.catroid.R;
+import org.catrobat.catroid.content.Script;
+import org.catrobat.catroid.content.bricks.IfThenLogicBeginBrick;
+import org.catrobat.catroid.formulaeditor.Formula;
 import org.catrobat.catroid.ui.MainMenuActivity;
 import org.catrobat.catroid.ui.SpriteActivity;
 import org.catrobat.catroid.ui.WebViewActivity;
+import org.catrobat.catroid.uiespresso.content.brick.utils.BrickTestUtils;
 import org.catrobat.catroid.uiespresso.util.rules.BaseActivityInstrumentationRule;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -65,10 +70,12 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static android.support.test.espresso.web.sugar.Web.onWebView;
 import static android.support.test.espresso.web.webdriver.DriverAtoms.findElement;
 import static android.support.test.espresso.web.webdriver.DriverAtoms.webClick;
+import static org.catrobat.catroid.uiespresso.content.brick.utils.BrickDataInteractionWrapper.onBrickAtPosition;
+import static org.catrobat.catroid.uiespresso.formulaeditor.utils.FormulaEditorWrapper.FORMULA_EDITOR_TEXT_FIELD_MATCHER;
+import static org.catrobat.catroid.uiespresso.formulaeditor.utils.FormulaEditorWrapper.onFormulaEditor;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.is;
-
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
@@ -80,26 +87,18 @@ public class ScreenshotsForAppStore {
 	public static final LocaleTestRule localeTestRule = new LocaleTestRule();
 
 	@Rule
-//	public ActivityTestRule<MainMenuActivity> mActivityTestRule = new ActivityTestRule<>(MainMenuActivity.class);
-//	public ActivityTestRule<MainMenuActivity> mActivityTestRule = new ActivityTestRule<>(MainMenuActivity.class, false, false);
-	public ActivityTestRule<MainMenuActivity> mActivityTestRule =
-			new ActivityTestRule<MainMenuActivity>(MainMenuActivity.class) {
-				@Override
-				protected void beforeActivityLaunched() {
-					PreferenceManager.getDefaultSharedPreferences(InstrumentationRegistry.getTargetContext())
-							.edit()
-							.putBoolean(AGREED_TO_PRIVACY_POLICY_SETTINGS_KEY, true)
-							.commit();
-				}
-			};
+	public ActivityTestRule<MainMenuActivity> mainActivityTestRule =
+			new ActivityTestRule<>(MainMenuActivity.class, false, false);
 
 	@Rule
-	public BaseActivityInstrumentationRule<SpriteActivity> mFormulaEditorTestRule =
+	public BaseActivityInstrumentationRule<SpriteActivity> formulaEditorTestRule =
 			new BaseActivityInstrumentationRule<>(SpriteActivity.class, SpriteActivity.EXTRA_FRAGMENT_POSITION,
 			SpriteActivity.FRAGMENT_SCRIPTS);
+	// safe
+	// public BaseActivityInstrumentationRule(Class<T> activityClass, String extraFragementPosition, int fragment)
 
 	@Rule
-	public ActivityTestRule<WebViewActivity> mWebActivityTestRule =
+	public ActivityTestRule<WebViewActivity> webActivityTestRule =
 			new ActivityTestRule<WebViewActivity>(WebViewActivity.class,
 					false, false) {
 				@Override
@@ -110,119 +109,43 @@ public class ScreenshotsForAppStore {
 
 	@Before
 	public void setUp() {
+		PreferenceManager.getDefaultSharedPreferences(InstrumentationRegistry.getTargetContext())
+							.edit()
+							.putBoolean(AGREED_TO_PRIVACY_POLICY_SETTINGS_KEY, true)
+							.commit();
 		Screengrab.setDefaultScreenshotStrategy(new UiAutomatorScreenshotStrategy());
-
-//		mActivityTestRule.launchActivity(null);
 		sleep(1000);
 	}
 
 	@Test
 	public void createScreenshotsApp() {
-		onView(withText(R.string.main_menu_programs)).check(matches(isDisplayed()));
+		mainActivityTestRule.launchActivity(null);
 
+		onView(withText(R.string.main_menu_programs)).check(matches(isDisplayed()));
 		takeScreenshot("screenshot1");
 
 		onView(withText(R.string.main_menu_programs)).perform(click());
-
-		ViewInteraction recyclerView2 = onView(
-				allOf(withId(R.id.recycler_view),
-						childAtPosition(
-								withClassName(is("android.widget.FrameLayout")),
-								2)));
-		recyclerView2.perform(actionOnItemAtPosition(0, click()));
-
-		ViewInteraction recyclerView3 = onView(
-				allOf(withId(R.id.recycler_view),
-						childAtPosition(
-								withClassName(is("android.widget.FrameLayout")),
-								2)));
-		recyclerView3.perform(actionOnItemAtPosition(3, click()));
-
+		onView(withId(R.id.recycler_view)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+		onView(withId(R.id.recycler_view)).perform(RecyclerViewActions.actionOnItemAtPosition(3, click()));
 		onView(withText(R.string.scripts)).perform(click());
 		onView(withId(R.id.button_play)).check(matches(isDisplayed()));
 		takeScreenshot("screenshot2");
 
-//		onView(withId(R.id.brick_if_begin_edit_text)).perform(click());
-//		onView(withId(R.id.brick_set_variable_edit_text)).perform(click());
-//		onView(withId(R.id.brick_wait_edit_text)).perform(click());
-//		onView(withId(R.id.formula_editor_edit_field)).perform(click());
-
-		DataInteraction linearLayout = onData(anything())
-				.inAdapterView(allOf(withId(android.R.id.list),
-						childAtPosition(
-								withId(R.id.fragment_script),
-								0)))
-				.atPosition(7);
-		linearLayout.perform(click());
-
-
-		DataInteraction appCompatTextView = onData(anything())
-				.inAdapterView(allOf(withId(R.id.select_dialog_listview),
-						childAtPosition(
-								withId(R.id.contentPanel),
-								0)))
-				.atPosition(3);
-		appCompatTextView.perform(click());
-
+		onBrickAtPosition(7).onFormulaTextField(R.id.brick_wait_edit_text).perform(click());
+		onFormulaEditor().performClickOn(FORMULA_EDITOR_TEXT_FIELD_MATCHER);
 		onView(withId(R.id.formula_editor_edit_field)).perform(click());
-		onView(withId(R.id.formula_editor_keyboard_ok)).check(matches(isDisplayed()));
 		takeScreenshot("screenshot3");
 	}
 
-//	@Test
-//	public void createScreenshotsFormulaEditor() {
-//		Script script = BrickTestUtils.createProjectAndGetStartScript("FormulaEditor");
-//		Formula formula = new Formula("x < 10");
-//		script.addBrick(0, new IfThenLogicBeginBrick(formula));
-//
-//		mFormulaEditorTestRule.launchActivity();
-//		onView(withId(R.id.brick_if_begin_edit_text)).perform(click());
-//		onView(withId(R.id.formula_editor_edit_field)).perform(click());
-//
-//
-////		onView(withId(R.id.brick_edit)).perform(click());
-////		Brick.BrickField.IF_CONDITION;
-//
-////		onFormulaEditor()
-////				.performOpenDataFragment();
-////		final String varNameX = "x";
-////		onDataList()
-////				.performAdd(varNameX);
-////
-////		pressBack();
-//
-////		onView(withId(R.id.formula_editor_keyboard_data)).perform(click());
-////		onFormulaEditor().performEnterFormula("(1)+1-1*1/1=1");
-//
-//		sleep(1000);
-//		takeScreenshot("screenshot10");
-//	}
-
-//	@Test
-//	public void createScreenshotsExplore() {
-//
-//	}
-
 	@Test
 	public void createScreenshotsWeb() {
+		mainActivityTestRule.launchActivity(null);
+
 		onView(withText(R.string.main_menu_web)).perform(click());
 		sleep(7000);
-
-//		ViewInteraction webView = onView(withId((R.id.webView)));
-
-//		onWebView().check(WebViewAssertions.webContent(DomMatchers.hasElementWithId("mostDownloaded")));
-//		onWebView().check(WebViewAssertions.webContent(DomMatchers.containingTextInBody("Catrobat")));
-//		onWebView().check(webMatches(getTitle(), is("Pocket Code Website")));  // works but not waiting
-
-//		onWebView()
-//				.withElement(findElement(Locator.ID, "mostDownloaded"))
-//				.perform(webClick());
-
-//		sleep(1000);
-
+		//onWebView().withElement(findElement(Locator.ID, "mostDownloaded")).perform(webClick());
 		takeScreenshot("screenshot4");
 	}
-
 
 	private void sleep(long milliseconds) {
 		try {
@@ -237,24 +160,5 @@ public class ScreenshotsForAppStore {
 			screenshotName = "untitled";
 		}
 		Screengrab.screenshot(screenshotName);
-	}
-
-	private static Matcher<View> childAtPosition(
-			final Matcher<View> parentMatcher, final int position) {
-
-		return new TypeSafeMatcher<View>() {
-			@Override
-			public void describeTo(Description description) {
-				description.appendText("Child at position " + position + " in parent ");
-				parentMatcher.describeTo(description);
-			}
-
-			@Override
-			public boolean matchesSafely(View view) {
-				ViewParent parent = view.getParent();
-				return parent instanceof ViewGroup && parentMatcher.matches(parent)
-						&& view.equals(((ViewGroup) parent).getChildAt(position));
-			}
-		};
 	}
 }
