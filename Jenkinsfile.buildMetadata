@@ -52,7 +52,7 @@ pipeline {
 		stage('Prepare build') {
 			steps {
 				script {
-					currentBuild.displayName = "#${env.BUILD_NUMBER} | ${env.sha1}"
+					currentBuild.displayName = "#${env.BUILD_NUMBER}"
 				}
 			}
 		}
@@ -74,7 +74,7 @@ pipeline {
 			}
 		}
 
-      stage('Start emulator') {
+        stage('Start emulator') {
 			steps {
 				sh "./buildScripts/build_helper_start_emulator"
 			}
@@ -89,6 +89,17 @@ pipeline {
 					// stop/kill emulator
 					sh "./buildScripts/build_helper_stop_emulator"
 				}
+				
+				success {
+                    publishHTML target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll: true,
+                    reportDir: 'fastlane/metadata/android',
+                    reportFiles: 'screenshots.html',
+                    reportName: 'Screenshots'
+                    ]
+                }
 			}
 		}
 		
