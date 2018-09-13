@@ -39,7 +39,7 @@ platform :android do
     upload_to_play_store
   end
 
-  desc "Catroid upload meta date only"
+  desc "Catroid upload metadata only"
   lane :upload_Metadata_Catroid do
     # ...
     upload_to_play_store(
@@ -56,7 +56,7 @@ platform :android do
     )
   end
 
-  desc "Catroid upload APK in Alpha"
+  desc "Catroid upload APK to alpha track"
   lane :upload_APK_Catroid do
     # ...
     upload_to_play_store(
@@ -73,7 +73,7 @@ platform :android do
     )
   end
 
-  desc "Catroid promote APK in Alpha to Production"
+  desc "Catroid promote APK on alpha track to production"
   lane :promote_Catroid do
     # ...
     upload_to_play_store(
@@ -87,5 +87,22 @@ platform :android do
       skip_upload_images:         'true',
       skip_upload_screenshots:    'true',
     )
-  end  
+  end
+  
+  desc "Luna&Cat upload APK to alpha track"
+  lane :upload_APK_LunaAndCat do
+    # ...
+    upload_to_play_store(
+      package_name:               'org.catrobat.catroid',
+      track:                      'alpha',
+      json_key_data:              ENV['GOOGLEPLAYJSONKEY'],
+      apk_paths:                  './catroid/build/outputs/apk/lunaAndCat/release/catroid-lunaAndCat-release.apk',
+      skip_upload_apk:            'false',
+      skip_upload_metadata:       'true',
+      skip_upload_images:         'true',
+      skip_upload_screenshots:    'true',
+      validate_only:              'false',
+      check_superseded_tracks:    'false',
+    )
+  end
 end
