@@ -52,7 +52,7 @@ pipeline {
 		stage('Prepare build') {
 			steps {
 				script {
-					currentBuild.displayName = "#${env.BUILD_NUMBER} | ${env.sha1}"
+					currentBuild.displayName = "#${env.BUILD_NUMBER}"
 				}
 			}
 		}

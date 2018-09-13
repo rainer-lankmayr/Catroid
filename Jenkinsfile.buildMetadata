@@ -82,7 +82,7 @@ pipeline {
 
         stage('Create Screenshots') {
             steps {
-			    sh "./gradlew generateScreenshotsPocketCode"
+			    sh "./gradlew generateScreenshotsCatroid"
             }
             post {
 			    always {

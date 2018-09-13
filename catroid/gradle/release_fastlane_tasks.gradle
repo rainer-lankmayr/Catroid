@@ -25,6 +25,7 @@ project.ext {
     fastlanePath = project.rootDir.path + "/fastlane"
     fastlaneMetadataPath = fastlanePath + "/metadata"
     fastlaneAndroidPath = fastlanePath + "/metadata/android"
+    fastlaneStaticContentPath = fastlanePath + "/staticContent"
 }
 
 final String releasePreparationMainGroup = "release preparation main"
@@ -35,7 +36,7 @@ def languageMapScreenshots = [
         "in" : ["id"],
 ]
 
-String testLocales = "\"'ar', 'de-DE', 'en-US'\""
+String testLocales = "\"'en-US', 'ar', 'de-DE'\""
 
 String getMappedLocalesForScreenshots = languageMapScreenshots.values().collect { it ->
     "'" + it.first() + "'"
@@ -49,56 +50,32 @@ task cleanFastlane(type: Delete) {
     followSymlinks = true
 }
 
-task makeScreenshotsPocketCode(type:Exec) {
-    description "Creates Screenshots for the App Store with Fastlane/Screengrab."
-    group releasePreparationSubGroup
-    dependsOn "assembleAndroidTest"
+android.productFlavors.all { flavor ->
+    task ("makeScreenshots${flavor.name.capitalize()}", type: Exec) {
+        description "Creates Screenshots for the App Store with Fastlane/Screengrab."
+        group releasePreparationSubGroup
+        dependsOn "assembleAndroidTest"
 
-    workingDir project.rootDir.path
+        workingDir project.rootDir.path
 
-    String assembleCommand = "./gradlew assembleCatroidDebug -PuseAndroidLocales=true"
+        String assembleCommand = "./gradlew assemble${flavor.name.capitalize()}Debug -PuseAndroidLocales=true"
 
-    String fastlaneCommand = "fastlane screengrab" +
-            " --app_package_name 'org.catrobat.catroid'" +
-            " --use_tests_in_packages 'org.catrobat.catroid.screenshots.catroid'" +
-            " --app_apk_path './catroid/build/outputs/apk/catroid/debug/catroid-catroid-debug.apk'" +
-            " --tests_apk_path './catroid/build/outputs/apk/androidTest/catroid/debug/catroid-catroid-debug-androidTest.apk'" +
-            " --test_instrumentation_runner 'android.support.test.runner.AndroidJUnitRunner'" +
-            " --clear_previous_screenshots true " +
-            " --exit_on_test_failure false " +
-            " --locales " + testLocales
-//            " --locales " + project.ext.getMappedLocalesCrowdin
+        String fastlaneCommand = "fastlane screengrab" +
+                " --app_package_name 'org.catrobat.catroid'" +
+                " --use_tests_in_packages 'org.catrobat.catroid.screenshots.${flavor.name}'" +
+                " --app_apk_path './catroid/build/outputs/apk/${flavor.name}/debug/catroid-${flavor.name}-debug.apk'" +
+                " --tests_apk_path './catroid/build/outputs/apk/androidTest/${flavor.name}/debug/catroid-${flavor.name}-debug-androidTest.apk'" +
+                " --test_instrumentation_runner 'android.support.test.runner.AndroidJUnitRunner'" +
+                " --clear_previous_screenshots true " +
+                " --exit_on_test_failure false " +
+                " --locales " + testLocales
+        //            " --locales " + project.ext.getMappedLocalesCrowdin
 
-    doFirst { logger.lifecycle("Taking screenshots for App Store ...") }
-    executable "sh"
-    args("-c", assembleCommand + ";" + fastlaneCommand)
-    doLast { logger.lifecycle("Taking screenshots for App Store done.") }
-}
-
-task makeScreenshotsLunaAndCat(type:Exec) {
-    description "Creates Screenshots for the App Store with Fastlane/Screengrab."
-    group releasePreparationSubGroup
-    dependsOn "assembleAndroidTest"
-
-    workingDir project.rootDir.path
-
-    String assembleCommand = "./gradlew assembleLunaAndCatDebug -PuseAndroidLocales=true"
-
-    String fastlaneCommand = "fastlane screengrab" +
-            " --app_package_name 'org.catrobat.catroid'" +
-            " --use_tests_in_packages 'org.catrobat.catroid.screenshots.lunaAndCat'" +
-            " --app_apk_path './catroid/build/outputs/apk/lunaAndCat/debug/catroid-lunaAndCat-debug.apk'" +
-            " --tests_apk_path './catroid/build/outputs/apk/androidTest/lunaAndCat/debug/catroid-lunaAndCat-debug-androidTest.apk'" +
-            " --test_instrumentation_runner 'android.support.test.runner.AndroidJUnitRunner'" +
-            " --clear_previous_screenshots true " +
-            " --exit_on_test_failure false " +
-            " --locales " + testLocales
-//            " --locales " + project.ext.getMappedLocalesCrowdin
-
-    doFirst { logger.lifecycle("Taking screenshots for App Store ...") }
-    executable "sh"
-    args("-c", assembleCommand + ";" + fastlaneCommand)
-    doLast { logger.lifecycle("Taking screenshots for App Store done.") }
+        doFirst { logger.lifecycle("Taking screenshots for App Store ...") }
+        executable "sh"
+        args("-c", assembleCommand + ";" + fastlaneCommand)
+        doLast { logger.lifecycle("Taking screenshots for App Store done.") }
+    }
 }
 
 task renameScreenshotFolders() {
@@ -106,7 +83,7 @@ task renameScreenshotFolders() {
     group releasePreparationSubGroup
 
     doLast {
-        logger.lifecycle("Renaming screenshot folders.")
+        logger.lifecycle("Renaming screenshot folders ...")
 
         new File(project.ext.fastlaneAndroidPath).eachDir() { dir ->
             def directories = dir.getPath().split("/")
@@ -129,25 +106,34 @@ task renameScreenshotFolders() {
     }
 }
 
-task generateScreenshotsPocketCode() {
-    description "Run all tasks to generate Screenshots for the App Store."
-    group releasePreparationMainGroup
-    dependsOn makeScreenshotsPocketCode, renameScreenshotFolders
+android.productFlavors.all { flavor ->
+    task ("addStaticContent${flavor.name.capitalize()}") {
+        description "Copy content from the \'fastlane/staticContent\' folder to the upload folder."
+        group releasePreparationSubGroup
 
-    doLast {
-        logger.lifecycle("Generating Screenshots done.")
-        logger.lifecycle("Path: " + project.ext.fastlaneMetadataPath)
+        doLast {
+            logger.lifecycle("Copying static content ...")
+            new File(project.ext.fastlaneAndroidPath).eachDir() { dir ->
+                ant.copy(todir: dir.getPath()) {
+                    fileset(dir: project.ext.fastlaneStaticContentPath + "/${flavor.name}")
+                }
+            }
+            logger.lifecycle("Copying static content done.")
+        }
     }
 }
 
-task generateScreenshotsLunaAndCat() {
-    description "Run all tasks to generate Screenshots for the App Store."
-    group releasePreparationMainGroup
-    dependsOn makeScreenshotsLunaAndCat, renameScreenshotFolders
+android.productFlavors.all { flavor ->
+    task ("generateScreenshots${flavor.name.capitalize()}") {
+        description "Run all tasks to generate Screenshots for the App Store."
+        group releasePreparationMainGroup
+        dependsOn "makeScreenshots${flavor.name.capitalize()}", renameScreenshotFolders,
+                "addStaticContent${flavor.name.capitalize()}"
 
-    doLast {
-        logger.lifecycle("Generating Screenshots done.")
-        logger.lifecycle("Path: " + project.ext.fastlaneMetadataPath)
+        doLast {
+            logger.lifecycle("Generating Screenshots done.")
+            logger.lifecycle("Path: " + project.ext.fastlaneMetadataPath)
+        }
     }
 }
 
@@ -175,8 +161,16 @@ task uploadAPKToPlayStore(type:Exec) {
     doLast { logger.lifecycle("Uploading Metadata to Play Store done.") }
 }
 
-makeScreenshotsPocketCode.shouldRunAfter(unpackCrowdinFiles)
-makeScreenshotsLunaAndCat.shouldRunAfter(unpackCrowdinFiles)
-renameScreenshotFolders.mustRunAfter(makeScreenshotsPocketCode)
-uploadMetadataToPlayStore.mustRunAfter(generateAppStoreInfo, renameScreenshotFolders)
-uploadAPKToPlayStore.mustRunAfter(uploadMetadataToPlayStore)
+afterEvaluate {
+    makeScreenshotsCatroid.shouldRunAfter(unpackCrowdinFiles)
+    makeScreenshotsLunaAndCat.shouldRunAfter(unpackCrowdinFiles)
+    renameScreenshotFolders.mustRunAfter(makeScreenshotsCatroid)
+    renameScreenshotFolders.mustRunAfter(makeScreenshotsLunaAndCat)
+//    android.productFlavors.all { flavor ->
+//        task."addStaticContent${flavor.name.capitalize()}".mustRunAfter(renameScreenshotFolders)
+//    }
+    addStaticContentCatroid.mustRunAfter(renameScreenshotFolders)
+    addStaticContentLunaAndCat.mustRunAfter(renameScreenshotFolders)
+    uploadMetadataToPlayStore.mustRunAfter(generateAppStoreInfo, renameScreenshotFolders)
+    uploadAPKToPlayStore.mustRunAfter(uploadMetadataToPlayStore)
+}
