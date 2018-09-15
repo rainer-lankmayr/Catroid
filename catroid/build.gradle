@@ -215,6 +215,10 @@ android {
 
             signingConfig signingConfigs.release
         }
+        releaseUnsigned.initWith(buildTypes.release)
+        releaseUnsigned {
+            signingConfig null
+        }
     }
 
     flavorDimensions "default"
