@@ -92,7 +92,7 @@ pipeline {
 		
 		stage('Approve upload') {
             options {
-                timeout(time: 1, unit: 'Hours')
+                timeout(time: 60, unit: 'MINUTES')
             }
             steps {
                 script {
