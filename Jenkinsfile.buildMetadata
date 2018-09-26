@@ -44,7 +44,7 @@ pipeline {
 	}
 
 	options {
-		timeout(time: 2, unit: 'HOURS')
+		timeout(time: 6, unit: 'HOURS')
 		timestamps()
 	}
 
@@ -68,9 +68,10 @@ pipeline {
 
 		stage('Setup Translations') {
 			steps {
-			    withCredentials([string(credentialsId: '0871b6a5-3e2d-451b-ab47-55321b6fa35d', variable: 'CROWDIN_KEY')]){
-				    sh "./gradlew generateCrowdinMetadata -PcrowdinKey=$crowdinKey"
-			    }
+			    sh '''
+                    set +x
+				    ./gradlew generateCrowdinMetadataCatroid -PcrowdinKey=$crowdinKey
+			    '''
 			}
 		}
 
@@ -106,7 +107,7 @@ pipeline {
 		stage('Review') {
             //agent none
             options {
-                timeout(time: 30, unit: 'MINUTES') 
+                timeout(time: 6, unit: 'Hours') 
             }
             steps {
                 script {
@@ -138,8 +139,6 @@ pipeline {
 
 	post {
 		always {
-			step([$class: 'LogParserPublisher', failBuildOnError: true, projectRulePath: 'buildScripts/log_parser_rules', unstableOnWarning: true, useProjectRule: true])
-
 			// Send notifications with standalone=false
 			script {
 				sendNotifications false

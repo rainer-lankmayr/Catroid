@@ -36,12 +36,6 @@ def languageMapScreenshots = [
         "in" : ["id"],
 ]
 
-String testLocales = "\"'en-US', 'ar', 'de-DE'\""
-
-String getMappedLocalesForScreenshots = languageMapScreenshots.values().collect { it ->
-    "'" + it.first() + "'"
-}.toString().replace("[", "\"").replace("]", "\"")
-
 task cleanFastlane(type: Delete) {
     description "Delete objects in fastlane folder."
     group releasePreparationSubGroup
@@ -50,15 +44,24 @@ task cleanFastlane(type: Delete) {
     followSymlinks = true
 }
 
+task useAndroidLocales() {
+    description "Set flag for debug to use Android locales codes."
+    group releasePreparationSubGroup
+
+    doLast{
+        project.ext."useAndroidLocales" = true
+    }
+}
+
 android.productFlavors.all { flavor ->
     task ("makeScreenshots${flavor.name.capitalize()}", type: Exec) {
         description "Creates Screenshots for the App Store with Fastlane/Screengrab."
         group releasePreparationSubGroup
+        dependsOn "useAndroidLocales"
         dependsOn "assembleAndroidTest"
+        dependsOn "assemble${flavor.name.capitalize()}Debug"
 
         workingDir project.rootDir.path
-
-        String assembleCommand = "./gradlew assemble${flavor.name.capitalize()}Debug -PuseAndroidLocales=true"
 
         String fastlaneCommand = "fastlane screengrab" +
                 " --app_package_name 'org.catrobat.catroid'" +
@@ -68,12 +71,11 @@ android.productFlavors.all { flavor ->
                 " --test_instrumentation_runner 'android.support.test.runner.AndroidJUnitRunner'" +
                 " --clear_previous_screenshots true " +
                 " --exit_on_test_failure false " +
-                " --locales " + testLocales
-        //            " --locales " + project.ext.getMappedLocalesCrowdin
+                " --locales " + project.ext.getMappedLocalesCrowdin
 
         doFirst { logger.lifecycle("Taking screenshots for App Store ...") }
         executable "sh"
-        args("-c", assembleCommand + ";" + fastlaneCommand)
+        args("-c", fastlaneCommand)
         doLast { logger.lifecycle("Taking screenshots for App Store done.") }
     }
 }
@@ -108,14 +110,17 @@ task renameScreenshotFolders() {
 
 android.productFlavors.all { flavor ->
     task ("addStaticContent${flavor.name.capitalize()}") {
-        description "Copy content from the \'fastlane/staticContent\' folder to the upload folder."
+        description "Copy content from \"fastlane/staticContent\" to the upload folder."
         group releasePreparationSubGroup
+
+        File images = new File(project.ext.fastlaneStaticContentPath + "/${flavor.name}/images")
+        images.mkdirs();
 
         doLast {
             logger.lifecycle("Copying static content ...")
             new File(project.ext.fastlaneAndroidPath).eachDir() { dir ->
-                ant.copy(todir: dir.getPath()) {
-                    fileset(dir: project.ext.fastlaneStaticContentPath + "/${flavor.name}")
+                ant.copy(todir: dir.getPath() + "/images") {
+                    fileset(dir: project.ext.fastlaneStaticContentPath + "/${flavor.name}/images")
                 }
             }
             logger.lifecycle("Copying static content done.")
@@ -166,11 +171,9 @@ afterEvaluate {
     makeScreenshotsLunaAndCat.shouldRunAfter(unpackCrowdinFiles)
     renameScreenshotFolders.mustRunAfter(makeScreenshotsCatroid)
     renameScreenshotFolders.mustRunAfter(makeScreenshotsLunaAndCat)
-//    android.productFlavors.all { flavor ->
-//        task."addStaticContent${flavor.name.capitalize()}".mustRunAfter(renameScreenshotFolders)
-//    }
     addStaticContentCatroid.mustRunAfter(renameScreenshotFolders)
     addStaticContentLunaAndCat.mustRunAfter(renameScreenshotFolders)
-    uploadMetadataToPlayStore.mustRunAfter(generateAppStoreInfo, renameScreenshotFolders)
+    uploadMetadataToPlayStore.mustRunAfter(generateAppStoreInfoCatroid, renameScreenshotFolders)
+    uploadMetadataToPlayStore.mustRunAfter(generateAppStoreInfoLunaAndCat, renameScreenshotFolders)
     uploadAPKToPlayStore.mustRunAfter(uploadMetadataToPlayStore)
 }

@@ -57,7 +57,6 @@ apply from: 'gradle/standalone_apk_tasks.gradle'
 apply from: 'gradle/android_tasks.gradle'
 apply from: 'gradle/release_crowdin_tasks.gradle'
 apply from: 'gradle/release_fastlane_tasks.gradle'
-apply from: 'gradle/release_tasks.gradle'
 
 check.dependsOn 'checkstyle'
 check.dependsOn 'pmd'
@@ -74,14 +73,8 @@ if (project.hasProperty('independent')) {
     manifestAppName = appName
 }
 
-// TODO just a dummy as workaround
 if (!project.hasProperty("signingKeystore")) {
-    ext.signingKeystore = "dummy"
-}
-
-def useAndroidLocales() {
-    def value = project.getProperties().get("useAndroidLocales")
-    return value != null ? "true" : "false"
+    ext.signingKeystore = "dummyKeystore"
 }
 
 ant.copy(file: 'google-services-template.json', tofile: 'google-services.json', overwrite: true)
@@ -97,6 +90,11 @@ if (project.hasProperty('fabricApiSecret')) {
     ant.replace(file: 'fabric.properties',
             token: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
             value: project.getProperties().get('fabricApiSecret'))
+}
+
+def useAndroidLocales() {
+    def value = project.getProperties().get("useAndroidLocales")
+    return value != null ? "true" : "false"
 }
 
 jacoco.toolVersion = "0.8.1"
@@ -162,7 +160,7 @@ android {
     }
 
     signingConfigs {
-        release {
+        signedRelease {
             // credentials loaded in release_task.gradle
             storeFile file(project["signingKeystore"])
             storePassword ""
@@ -171,8 +169,14 @@ android {
         }
     }
 
-    buildTypes {
+    if (project.hasProperty("signingKeystore") && project.hasProperty("signingKeystorePassword") &&
+            project.hasProperty("signingKeyAlias") && project.hasProperty("signingKeyPassword")) {
+        android.signingConfigs.signedRelease.storePassword = project.getProperties().get("signingKeystorePassword")
+        android.signingConfigs.signedRelease.keyAlias = project.getProperties().get("signingKeyAlias")
+        android.signingConfigs.signedRelease.keyPassword = project.getProperties().get("signingKeyPassword")
+    }
 
+    buildTypes {
         debug {
             buildConfigField "boolean", "FEATURE_EMBROIDERY_ENABLED", "true"
             buildConfigField "boolean", "FEATURE_LEGO_NXT_ENABLED", "true"
@@ -194,6 +198,7 @@ android {
             ext.enableCrashlytics = false
             testCoverageEnabled = true
         }
+
         release {
             buildConfigField "boolean", "FEATURE_EMBROIDERY_ENABLED", "false"
             buildConfigField "boolean", "FEATURE_LEGO_NXT_ENABLED", "true"
@@ -212,12 +217,11 @@ android {
             buildConfigField "boolean", "CRASHLYTICS_CRASH_REPORT_ENABLED", "true"
             buildConfigField "boolean", "USE_ANDROID_LOCALES_FOR_SCREENSHOTS", "false"
             resValue "string", "SNACKBAR_HINTS_ENABLED", "true"
-
-            signingConfig signingConfigs.release
         }
-        releaseUnsigned.initWith(buildTypes.release)
-        releaseUnsigned {
-            signingConfig null
+
+        signedRelease.initWith(buildTypes.release)
+        signedRelease {
+            signingConfig signingConfigs.signedRelease
         }
     }
 
