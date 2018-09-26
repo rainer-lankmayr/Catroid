@@ -76,3 +76,4 @@ fastlane/*
 !fastlane/Appfile
 !fastlane/Fastfile
 !fastlane/staticContent/
+Gemfile
