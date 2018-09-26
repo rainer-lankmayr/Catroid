@@ -125,7 +125,7 @@ pipeline {
                 environment name: 'APPROVE_DEPLOY', value: 'yes'
             }
 			steps {
-				sh "./gradlew uploadMetadataToPlayStore"
+				sh "fastlane android upload_Metadata_Catroid"
 			}
 		}
 
