@@ -39,7 +39,7 @@ platform :android do
     upload_to_play_store
   end
 
-  desc "Catroid upload metadata only"
+  desc "upload Catroid metadata only"
   lane :upload_Metadata_Catroid do
     # ...
     upload_to_play_store(
@@ -56,7 +56,7 @@ platform :android do
     )
   end
 
-  desc "Catroid upload APK to alpha track"
+  desc "upload Catroid APK to alpha track"
   lane :upload_APK_Catroid do
     # ...
     upload_to_play_store(
@@ -73,7 +73,7 @@ platform :android do
     )
   end
 
-  desc "Catroid promote APK on alpha track to production"
+  desc "promote Catroid APK on alpha track to production"
   lane :promote_Catroid do
     # ...
     upload_to_play_store(
@@ -89,7 +89,7 @@ platform :android do
     )
   end
   
-  desc "Luna&Cat upload APK to alpha track"
+  desc "upload Luna&Cat APK to alpha track"
   lane :upload_APK_LunaAndCat do
     # ...
     upload_to_play_store(

@@ -72,8 +72,10 @@ pipeline {
                 //TODO: remove test package name
                 withCredentials([
                     certificate(keystoreVariable: 'SIGNING_KEYSTORE', passwordVariable: 'KEYSTORE_PASSWORD', credentialsId: 'c4f690ba-86e1-4885-82e4-73c1cbc5b9d6')
-                ]) { 
-                    sh '''./gradlew assembleCatroidRelease \
+                ]) {
+                    sh '''
+                        set +x
+                        ./gradlew assembleCatroidSignedRelease \
                         -PsigningKeystore=${SIGNING_KEYSTORE} \
                         -PsigningKeystorePassword=$KEYSTORE_PASSWORD \
                         -PsigningKeyAlias=$signingKeyAlias \
@@ -81,9 +83,10 @@ pipeline {
                         -PfirebaseApiKey=$firebaseApiKey \
                         -PfabricApiKey=$fabricApiKey \
                         -PfabricApiSecret=$fabricApiSecret \
-                        -Pindependent="org.catrobat.catroid.independent_20180816_1756" 
+                        -Pindependent="org.catrobat.catroid.independent_20180816_1756"
                     '''
                 }
+                archiveArtifacts artifacts: 'catroid/build/outputs/apk/**/*.apk', fingerprint: true
 			}
 		}
 
@@ -96,12 +99,7 @@ pipeline {
 
 	post {
 		always {
-			step([$class: 'LogParserPublisher', failBuildOnError: true, projectRulePath: 'buildScripts/log_parser_rules', unstableOnWarning: true, useProjectRule: true])
-
-			// Send notifications with standalone=false
-			script {
-				sendNotifications false
-			}
+            deleteDir()
 		}
 	}
 }
