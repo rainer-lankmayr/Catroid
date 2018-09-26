@@ -84,6 +84,8 @@ pipeline {
         stage('Create Screenshots') {
             steps {
 			    sh "./gradlew generateScreenshotsCatroid"
+			    zip zipFile: 'metadata.zip', archive: false, dir: 'fastlane/metadata'
+                archiveArtifacts artifacts: 'metadata.zip', fingerprint: true
             }
             post {
 			    always {
@@ -107,7 +109,7 @@ pipeline {
 		stage('Review') {
             //agent none
             options {
-                timeout(time: 6, unit: 'Hours') 
+                timeout(time: 6, unit: 'Hours')
             }
             steps {
                 script {

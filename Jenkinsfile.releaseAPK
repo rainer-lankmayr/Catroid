@@ -89,8 +89,24 @@ pipeline {
                 archiveArtifacts artifacts: 'catroid/build/outputs/apk/**/*.apk', fingerprint: true
 			}
 		}
+		
+		stage('Approve upload') {
+            options {
+                timeout(time: 1, unit: 'Hours')
+            }
+            steps {
+                script {
+                    env.APPROVE_UPLOAD_APK = input message: 'User input required',
+                        parameters: [choice(name: 'Upload', choices: 'no\nyes', 
+                        description: 'Do you want to upload this APK to Alpha Channel on Google Play?')]
+                }
+            }
+        }
 
         stage('Upload AKP to Alpha') {
+            when {
+                environment name: 'APPROVE_UPLOAD_APK', value: 'yes'
+            }
 			steps {
                 sh "./gradlew uploadAPKToPlayStore"
 			}
