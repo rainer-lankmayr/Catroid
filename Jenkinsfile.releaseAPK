@@ -66,55 +66,55 @@ pipeline {
 			}
 		}
 
-        stage('Build signed APK') {
+		stage('Build signed APK') {
 			steps {
-                // Build, zipalign and sign releasable APK
-                //TODO: remove test package name
-                withCredentials([file(credentialsId: '8da77a7f-7ed6-490a-919e-10dae86a0fbe', variable: 'SIGNING_KEYSTORE')]) {
-                    sh '''
-                        set +x
-                        ./gradlew assembleCatroidSignedRelease \
-                        -PsigningKeystore=${SIGNING_KEYSTORE} \
-                        -PsigningKeystorePassword=$signingKeystorePassword \
-                        -PsigningKeyAlias=$signingKeyAlias \
-                        -PsigningKeyPassword=$signingKeyPassword \
-                        -PfirebaseApiKey=$firebaseApiKey \
-                        -PfabricApiKey=$fabricApiKey \
-                        -PfabricApiSecret=$fabricApiSecret \
-                        -Pindependent="org.catrobat.catroid.independent_20180816_1756"
-                    '''
-                }
-                archiveArtifacts artifacts: 'catroid/build/outputs/apk/**/*signedRelease.apk', fingerprint: true
+				// Build, zipalign and sign releasable APK
+				//TODO: remove test package name
+				withCredentials([file(credentialsId: '8da77a7f-7ed6-490a-919e-10dae86a0fbe', variable: 'SIGNING_KEYSTORE')]) {
+					sh '''
+						set +x
+						./gradlew assembleCatroidSignedRelease \
+						-PsigningKeystore=${SIGNING_KEYSTORE} \
+						-PsigningKeystorePassword=$signingKeystorePassword \
+						-PsigningKeyAlias=$signingKeyAlias \
+						-PsigningKeyPassword=$signingKeyPassword \
+						-PfirebaseApiKey=$firebaseApiKey \
+						-PfabricApiKey=$fabricApiKey \
+						-PfabricApiSecret=$fabricApiSecret \
+						-Pindependent="org.catrobat.catroid.independent_20180816_1756"
+					'''
+				}
+				archiveArtifacts artifacts: 'catroid/build/outputs/apk/**/*signedRelease.apk', fingerprint: true
 			}
 		}
 		
 		stage('Approve upload') {
-            options {
-                timeout(time: 60, unit: 'MINUTES')
-            }
-            steps {
-                script {
-                    env.APPROVE_UPLOAD_APK = input message: 'User input required',
-                        parameters: [choice(name: 'Upload', choices: 'no\nyes', 
-                        description: 'Do you want to upload this APK to Alpha Channel on Google Play?')]
-                }
-            }
-        }
-
-        stage('Upload AKP to Alpha') {
-            when {
-                environment name: 'APPROVE_UPLOAD_APK', value: 'yes'
-            }
+			options {
+				timeout(time: 60, unit: 'MINUTES')
+			}
 			steps {
-                sh "fastlane android upload_APK_Catroid"
+				script {
+					env.APPROVE_UPLOAD_APK = input message: 'User input required',
+						parameters: [choice(name: 'Upload', choices: 'no\nyes',
+						description: 'Do you want to upload this APK to Alpha Channel on Google Play?')]
+				}
+			}
+		}
+
+		stage('Upload AKP to Alpha') {
+			when {
+				environment name: 'APPROVE_UPLOAD_APK', value: 'yes'
+			}
+			steps {
+				sh "fastlane android upload_APK_Catroid"
 			}
 		}
 	}
 
 	post {
 		always {
-		    // clean workspace
-            deleteDir()
+			// clean workspace
+			deleteDir()
 		}
 	}
 }
