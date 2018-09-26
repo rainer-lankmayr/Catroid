@@ -109,7 +109,7 @@ pipeline {
 		stage('Review') {
             //agent none
             options {
-                timeout(time: 6, unit: 'Hours')
+                timeout(time: 6, unit: 'HOURS')
             }
             steps {
                 script {
