@@ -81,7 +81,7 @@ pipeline {
 						-PfirebaseApiKey=$firebaseApiKey \
 						-PfabricApiKey=$fabricApiKey \
 						-PfabricApiSecret=$fabricApiSecret \
-						-Pindependent="org.catrobat.catroid.independent_20180816_1756"
+						-Pindependent="org.catrobat.catroid.playground"
 					'''
 				}
 				archiveArtifacts artifacts: 'catroid/build/outputs/apk/**/*signedRelease.apk', fingerprint: true
