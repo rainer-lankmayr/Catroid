@@ -43,7 +43,7 @@ platform :android do
   lane :upload_Metadata_Catroid do
     # ...
     upload_to_play_store(
-      package_name:               'org.catrobat.catroid.independent_20180816_1756',
+      package_name:               'org.catrobat.catroid.playground',
       track:                      'alpha',
       json_key_data:              ENV['GOOGLEPLAYJSONKEY'],
       metadata_path:              './fastlane/metadata/android',
@@ -60,7 +60,7 @@ platform :android do
   lane :upload_APK_Catroid do
     # ...
     upload_to_play_store(
-      package_name:               'org.catrobat.catroid.independent_20180816_1756',
+      package_name:               'org.catrobat.catroid.playground',
       track:                      'alpha',
       json_key_data:              ENV['GOOGLEPLAYJSONKEY'],
       apk_paths:                  './catroid/build/outputs/apk/catroid/signedRelease/catroid-catroid-signedRelease.apk',
@@ -77,7 +77,7 @@ platform :android do
   lane :promote_Catroid do
     # ...
     upload_to_play_store(
-      package_name:               'org.catrobat.catroid.independent_20180816_1756',
+      package_name:               'org.catrobat.catroid.playground',
       track:                      'alpha',
       track_promote_to:           'production',
       json_key_data:              ENV['GOOGLEPLAYJSONKEY'],
@@ -93,7 +93,7 @@ platform :android do
   lane :upload_APK_LunaAndCat do
     # ...
     upload_to_play_store(
-      package_name:               'org.catrobat.catroid',
+      package_name:               'org.catrobat.catroid.playground',
       track:                      'alpha',
       json_key_data:              ENV['GOOGLEPLAYJSONKEY'],
       apk_paths:                  './catroid/build/outputs/apk/lunaAndCat/signedRelease/catroid-lunaAndCat-signedRelease.apk',

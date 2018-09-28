@@ -68,7 +68,7 @@ if (project.hasProperty('independent')) {
     def today = new Date()
     //TODO: restore appId
 //    appId += '.independent_' + today.format('YYYYMMdd_HHmm')
-    appId += '.independent_20180816_1756'
+    appId += '.playground'
     appName = property('independent') ?: 'Code ' + today.format('MMdd HH:mm')
     manifestAppName = appName
 }
@@ -362,7 +362,7 @@ dependencies {
     androidTestImplementation ('tools.fastlane:screengrab:1.1.0'){
         exclude group: 'com.android.support'
     }
-    androidTestCompile ('com.android.support.test.espresso:espresso-web:3.0.1') {
+    androidTestImplementation ('com.android.support.test.espresso:espresso-web:3.0.1') {
         exclude group: 'com.android.support'
     }
 
