@@ -63,7 +63,7 @@ pipeline {
 		stage('Build signed APK') {
 			steps {
 				// Build, zipalign and sign releasable APK
-				withCredentials([file(credentialsId: 'c4f690ba-86e1-4885-82e4-73c1cbc5b9d6', variable: 'SIGNING_KEYSTORE')]) {
+				withCredentials([file(credentialsId: '8da77a7f-7ed6-490a-919e-10dae86a0fbe', variable: 'SIGNING_KEYSTORE')]) {
 					script {
 						if ($flavor == 'All') {
 							sh '''
