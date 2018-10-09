@@ -64,17 +64,33 @@ pipeline {
 			steps {
 				// Build, zipalign and sign releasable APK
 				withCredentials([file(credentialsId: 'a925b6e8-b3c6-407e-8cad-65886e330037', variable: 'SIGNING_KEYSTORE')]) {
-					sh '''
-						set +x
-						./gradlew assembleCatroidSignedRelease \
-						-PsigningKeystore=${SIGNING_KEYSTORE} \
-						-PsigningKeystorePassword=$signingKeystorePassword \
-						-PsigningKeyAlias=$signingKeyAlias \
-						-PsigningKeyPassword=$signingKeyPassword \
-						-PfirebaseApiKey=$firebaseApiKey \
-						-PfabricApiKey=$fabricApiKey \
-						-PfabricApiSecret=$fabricApiSecret
-					'''
+					script {
+						if ($flavor == 'All') {
+							sh '''
+								set +x
+								./gradlew assembleSignedRelease \
+								-PsigningKeystore=${SIGNING_KEYSTORE} \
+								-PsigningKeystorePassword=$signingKeystorePassword \
+								-PsigningKeyAlias=$signingKeyAlias \
+								-PsigningKeyPassword=$signingKeyPassword \
+								-PfirebaseApiKey=$firebaseApiKey \
+								-PfabricApiKey=$fabricApiKey \
+								-PfabricApiSecret=$fabricApiSecret
+							'''
+						} else {
+							sh '''
+								set +x
+								./gradlew assemble${flavor}SignedRelease \
+								-PsigningKeystore=${SIGNING_KEYSTORE} \
+								-PsigningKeystorePassword=$signingKeystorePassword \
+								-PsigningKeyAlias=$signingKeyAlias \
+								-PsigningKeyPassword=$signingKeyPassword \
+								-PfirebaseApiKey=$firebaseApiKey \
+								-PfabricApiKey=$fabricApiKey \
+								-PfabricApiSecret=$fabricApiSecret
+							'''
+						}
+					}
 				}
 				archiveArtifacts artifacts: 'catroid/build/outputs/apk/**/*signedRelease.apk', fingerprint: true
 			}
