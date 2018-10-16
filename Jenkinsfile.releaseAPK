@@ -65,11 +65,10 @@ pipeline {
 				// Build, zipalign and sign releasable APK
 				withCredentials([file(credentialsId: '8da77a7f-7ed6-490a-919e-10dae86a0fbe', variable: 'SIGNING_KEYSTORE')]) {
 					script {
-						echo env.playground
-						if (env.playground == 'true') {
-							echo 'I am true'
-						}
 						if (env.flavor == 'All') {
+							if (env.playground == 'true') {
+								error("The playground option can only be used with a specific flavor.")
+							}
 							// set +x
 							sh '''
 								./gradlew assembleSignedRelease \
@@ -82,17 +81,33 @@ pipeline {
 								-PfabricApiSecret=$fabricApiSecret
 							'''
 						} else {
-							//set +x
-							sh '''
-								./gradlew assemble${flavor}SignedRelease \
-								-PsigningKeystore=${SIGNING_KEYSTORE} \
-								-PsigningKeystorePassword=$signingKeystorePassword \
-								-PsigningKeyAlias=$signingKeyAlias \
-								-PsigningKeyPassword=$signingKeyPassword \
-								-PfirebaseApiKey=$firebaseApiKey \
-								-PfabricApiKey=$fabricApiKey \
-								-PfabricApiSecret=$fabricApiSecret
-							'''
+							if (env.playground == 'true') {
+								//set +x
+								sh '''
+									./gradlew assemble${flavor}SignedRelease \
+									-PsigningKeystore=${SIGNING_KEYSTORE} \
+									-PsigningKeystorePassword=$signingKeystorePassword \
+									-PsigningKeyAlias=$signingKeyAlias \
+									-PsigningKeyPassword=$signingKeyPassword \
+									-PfirebaseApiKey=$firebaseApiKey \
+									-PfabricApiKey=$fabricApiKey \
+									-PfabricApiSecret=$fabricApiSecret
+									-Pplayground
+								'''
+							} else {
+								//set +x
+								sh '''
+									./gradlew assemble${flavor}SignedRelease \
+									-PsigningKeystore=${SIGNING_KEYSTORE} \
+									-PsigningKeystorePassword=$signingKeystorePassword \
+									-PsigningKeyAlias=$signingKeyAlias \
+									-PsigningKeyPassword=$signingKeyPassword \
+									-PfirebaseApiKey=$firebaseApiKey \
+									-PfabricApiKey=$fabricApiKey \
+									-PfabricApiSecret=$fabricApiSecret
+								'''
+							}
+
 						}
 					}
 				}
