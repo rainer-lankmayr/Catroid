@@ -118,7 +118,8 @@ if (project.hasProperty('independent')) {
     manifestAppName = appName
 }
 
-if (project.hasProperty('playground')) {
+if (project.hasProperty('playground') && project.getProperties().get('playground') == 'true') {
+    logger.lifecycle('playground true: ' + project.getProperties().get('playground'))
     appId += '.playground'
     appName = 'Catrobat Playground'
     manifestAppName = appName
