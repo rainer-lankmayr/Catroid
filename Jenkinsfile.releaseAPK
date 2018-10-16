@@ -43,6 +43,12 @@ pipeline {
 	}
 
 	stages {
+		script {
+			if (env.flavor == 'All' && env.playground == 'true') {
+				error("The playground option can only be used with a specific flavor.")
+			}
+		}
+
 		stage('Prepare build') {
 			steps {
 				script {
@@ -66,9 +72,6 @@ pipeline {
 				withCredentials([file(credentialsId: '8da77a7f-7ed6-490a-919e-10dae86a0fbe', variable: 'SIGNING_KEYSTORE')]) {
 					script {
 						if (env.flavor == 'All') {
-							if (env.playground == 'true') {
-								error("The playground option can only be used with a specific flavor.")
-							}
 							// set +x
 							sh '''
 								./gradlew assembleSignedRelease \
