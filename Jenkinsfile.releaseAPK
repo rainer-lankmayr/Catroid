@@ -92,7 +92,7 @@ pipeline {
 								-PsigningKeyPassword=$signingKeyPassword \
 								-PfirebaseApiKey=$firebaseApiKey \
 								-PfabricApiKey=$fabricApiKey \
-								-PfabricApiSecret=$fabricApiSecret
+								-PfabricApiSecret=$fabricApiSecret \
 								-Pplayground=$playground
 							'''
 						}
