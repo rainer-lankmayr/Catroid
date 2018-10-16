@@ -49,9 +49,8 @@ pipeline {
 					currentBuild.displayName = "#${env.BUILD_NUMBER}"
 
 					if (env.flavor == 'All' && env.playground == 'true') {
-						echo 'The playground option can only be used with a specific flavor.'
 						currentBuild.result = 'NOT_BUILT'
-						error('Aborting the build.')
+						error('The playground option can only be used with a specific flavor.')
 					}
 				}
 			}
