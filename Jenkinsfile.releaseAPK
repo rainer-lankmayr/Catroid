@@ -51,7 +51,7 @@ pipeline {
 					if (env.flavor == 'All' && env.playground == 'true') {
 						echo 'The playground option can only be used with a specific flavor.'
 						currentBuild.result = 'NOT_BUILT'
-						return
+						error('Aborting the build.')
 					}
 				}
 			}
