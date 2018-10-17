@@ -71,7 +71,7 @@ pipeline {
 				withCredentials([file(credentialsId: '8da77a7f-7ed6-490a-919e-10dae86a0fbe', variable: 'SIGNING_KEYSTORE')]) {
 					script {
 						if (env.flavor == 'All') {
-							// set +x
+							set +x
 							sh '''
 								./gradlew assembleSignedRelease \
 								-PsigningKeystore=${SIGNING_KEYSTORE} \
@@ -83,7 +83,7 @@ pipeline {
 								-PfabricApiSecret=$fabricApiSecret
 							'''
 						} else {
-							//set +x
+							set +x
 							sh '''
 								./gradlew assemble${flavor}SignedRelease \
 								-PsigningKeystore=${SIGNING_KEYSTORE} \
