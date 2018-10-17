@@ -120,7 +120,7 @@ if (project.hasProperty('independent')) {
 
 if (project.hasProperty('playground') && project.getProperties().get('playground') == 'true') {
     logger.lifecycle('playground true: ' + project.getProperties().get('playground'))
-    appId += '.playground'
+    appId = 'org.catrobat.catroid.test'
     appName = 'Catrobat Playground'
     manifestAppName = appName
 }
