@@ -47,11 +47,6 @@ pipeline {
 			steps {
 				script {
 					currentBuild.displayName = "#${env.BUILD_NUMBER} | ${env.flavor}"
-
-					if (env.flavor == 'All' && env.playground == 'true') {
-						currentBuild.result = 'NOT_BUILT'
-						error('The playground option can only be used with a specific flavor.')
-					}
 				}
 			}
 		}
@@ -68,7 +63,7 @@ pipeline {
 		stage('Build signed APK') {
 			steps {
 				// Build, zipalign and sign releasable APK
-				withCredentials([file(credentialsId: 'a925b6e8-b3c6-407e-8cad-65886e330037', variable: 'SIGNING_KEYSTORE')]) {
+				withCredentials([file(credentialsId: '8da77a7f-7ed6-490a-919e-10dae86a0fbe', variable: 'SIGNING_KEYSTORE')]) {
 					script {
 						if (env.flavor == 'All') {
 							sh '''
@@ -82,6 +77,19 @@ pipeline {
 								-PfabricApiKey=$fabricApiKey \
 								-PfabricApiSecret=$fabricApiSecret
 							'''
+						} else if (env.flavor == 'Playground') {
+							sh '''
+								set +x
+								./gradlew assembleCatroidSignedRelease \
+								-PsigningKeystore=${SIGNING_KEYSTORE} \
+								-PsigningKeystorePassword=$signingKeystorePassword \
+								-PsigningKeyAlias=$signingKeyAlias \
+								-PsigningKeyPassword=$signingKeyPassword \
+								-PfirebaseApiKey=$firebaseApiKey \
+								-PfabricApiKey=$fabricApiKey \
+								-PfabricApiSecret=$fabricApiSecret \
+								-Pplayground=true
+							'''
 						} else {
 							sh '''
 								set +x
@@ -92,8 +100,7 @@ pipeline {
 								-PsigningKeyPassword=$signingKeyPassword \
 								-PfirebaseApiKey=$firebaseApiKey \
 								-PfabricApiKey=$fabricApiKey \
-								-PfabricApiSecret=$fabricApiSecret \
-								-Pplayground=$playground
+								-PfabricApiSecret=$fabricApiSecret
 							'''
 						}
 					}
@@ -121,18 +128,15 @@ pipeline {
 			}
 			steps {
 				script {
-					if (env.playground == 'true') {
-						sh 'fastlane android upload_APK_Playground'
+					if (env.flavor == 'All') {
+						sh '''
+							fastlane android upload_APK_Catroid \
+							fastlane android upload_APK_CreateAtSchool
+							fastlane android upload_APK_LunaAndCat \
+							fastlane android upload_APK_Phiro \
+						'''
 					} else {
-						if (env.flavor == 'All') {
-							sh '''
-								fastlane android upload_APK_Catroid && \
-								fastlane android upload_APK_LunaAndCat
-								fastlane android upload_APK_Phiro
-							'''
-						} else {
-							sh 'fastlane android upload_APK_${flavor}'
-						}
+						sh 'fastlane android upload_APK_${flavor}'
 					}
 				}
 			}
