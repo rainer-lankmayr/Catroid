@@ -183,7 +183,6 @@ platform :android do
 
     desc "upload Phiro APK to alpha track"
     lane :upload_APK_Phiro do
-      # ...
       upload_to_play_store(
         package_name:               'org.catrobat.catroid.phiro',
         track:                      'alpha',

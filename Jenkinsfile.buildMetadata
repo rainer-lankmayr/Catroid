@@ -77,7 +77,13 @@ pipeline {
 
 		stage('Create Screenshots') {
 			steps {
-				sh "./gradlew generateScreenshotsCatroid"
+				script {
+					if (env.flavor == 'Playground') {
+						sh "./gradlew generateScreenshotsCatroid"
+					} else {
+						sh "./gradlew generateScreenshots${flavor}"
+					}
+				}
 			}
 			post {
 			    always {
@@ -93,6 +99,8 @@ pipeline {
 					reportFiles: 'screenshots.html',
 					reportName: 'Screenshots'
 					]
+
+					archiveArtifacts artifacts: 'fastlane/metadata/', fingerprint: true
 				}
 			}
 		}
@@ -116,6 +124,13 @@ pipeline {
 				environment name: 'APPROVE_DEPLOY', value: 'yes'
 			}
 			steps {
+				script {
+					if (env.flavor == 'Playground') {
+						sh "./gradlew generateScreenshotsCatroid"
+					} else {
+						sh "./gradlew generateScreenshots${flavor}"
+					}
+				}
 				sh "fastlane android upload_Metadata_Catroid"
 			}
 		}
@@ -125,7 +140,14 @@ pipeline {
 				environment name: 'APPROVE_DEPLOY', value: 'yes'
 			}
 			steps {
-				sh "fastlane android promote_Catroid"
+				script {
+					if (env.flavor == 'Playground') {
+						echo "Playground cannot be promoted to production!"
+					} else {
+						sh "fastlane android promote_${flavor}"
+					}
+				}
+
 			}
 		}
 	}
