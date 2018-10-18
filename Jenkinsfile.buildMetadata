@@ -62,10 +62,19 @@ pipeline {
 
 		stage('Setup Translations') {
 			steps {
-			    sh '''
-					set +x
-					./gradlew generateCrowdinMetadataCatroid -PcrowdinKey=$crowdinKey
-			    '''
+				script {
+					if (env.flavor == 'Playground') {
+						sh '''
+							set +x
+							./gradlew generateCrowdinMetadataCatroid -PcrowdinKey=$crowdinKey
+						'''
+					} else {
+						sh '''
+							set +x
+							./gradlew generateCrowdinMetadata${flavor} -PcrowdinKey=$crowdinKey
+						'''
+					}
+				}
 			}
 		}
 
@@ -79,9 +88,9 @@ pipeline {
 			steps {
 				script {
 					if (env.flavor == 'Playground') {
-						sh "./gradlew generateScreenshotsCatroid"
+						sh './gradlew generateScreenshotsCatroid'
 					} else {
-						sh "./gradlew generateScreenshots${flavor}"
+						sh './gradlew generateScreenshots${flavor}'
 					}
 				}
 
@@ -126,14 +135,7 @@ pipeline {
 				environment name: 'APPROVE_DEPLOY', value: 'yes'
 			}
 			steps {
-				script {
-					if (env.flavor == 'Playground') {
-						sh "./gradlew generateScreenshotsCatroid"
-					} else {
-						sh "./gradlew generateScreenshots${flavor}"
-					}
-				}
-				sh "fastlane android upload_Metadata_Catroid"
+				sh 'fastlane android upload_Metadata_${flavor}'
 			}
 		}
 
@@ -144,12 +146,12 @@ pipeline {
 			steps {
 				script {
 					if (env.flavor == 'Playground') {
-						echo "Playground cannot be promoted to production!"
+						echo 'Playground cannot be promoted to production!'
 					} else {
-						sh "fastlane android promote_${flavor}"
+						// deactivated for testing to not publish by accident
+						//sh 'fastlane android promote_${flavor}'
 					}
 				}
-
 			}
 		}
 	}
