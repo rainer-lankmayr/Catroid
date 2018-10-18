@@ -84,7 +84,11 @@ pipeline {
 						sh "./gradlew generateScreenshots${flavor}"
 					}
 				}
+
+				zip zipFile: 'metadata.zip', archive: false, dir: 'fastlane/metadata'
+				archiveArtifacts artifacts: 'metadata.zip', fingerprint: true
 			}
+
 			post {
 			    always {
 					sh './gradlew stopEmulator'
@@ -99,8 +103,6 @@ pipeline {
 					reportFiles: 'screenshots.html',
 					reportName: 'Screenshots'
 					]
-
-					archiveArtifacts artifacts: 'fastlane/metadata/', fingerprint: true
 				}
 			}
 		}
