@@ -71,7 +71,8 @@ android.productFlavors.all { flavor ->
                 " --test_instrumentation_runner 'android.support.test.runner.AndroidJUnitRunner'" +
                 " --clear_previous_screenshots true " +
                 " --exit_on_test_failure false " +
-                " --locales " + project.ext.getMappedLocalesCrowdin
+                //" --locales " + project.ext.getMappedLocalesCrowdin
+                " --locales \"'en-US', 'ar', 'de-DE'\""
 
         doFirst { logger.lifecycle("Taking screenshots for App Store ...") }
         executable "sh"
