@@ -158,10 +158,8 @@ pipeline {
 
 	post {
 		always {
-			// Send notifications with standalone=false
-			script {
-				sendNotifications false
-			}
+			// clean workspace
+			deleteDir()
 		}
 	}
 }
