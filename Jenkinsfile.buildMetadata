@@ -150,6 +150,7 @@ pipeline {
 					} else {
 						// deactivated for testing to not publish by accident
 						//sh 'fastlane android promote_${flavor}'
+						echo 'The promotion of the APK is currently deactivated!'
 					}
 				}
 			}
