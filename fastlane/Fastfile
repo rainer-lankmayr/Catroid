@@ -215,8 +215,7 @@ platform :android do
     upload_to_play_store(
       package_name:               'org.catrobat.catroid.test',
       track:                      'alpha',
-      #json_key_data:             ENV['googlePlayJsonKey'],
-      json_key:                   './fastlane/playground.json',
+      json_key_data:              ENV['googlePlayJsonKey'],
       metadata_path:              './fastlane/metadata/android',
       skip_upload_apk:            'true',
       skip_upload_metadata:       'false',
@@ -232,8 +231,7 @@ platform :android do
     upload_to_play_store(
       package_name:               'org.catrobat.catroid.test',
       track:                      'alpha',
-      #json_key_data:             ENV['googlePlayJsonKey'],
-      json_key:                   './fastlane/playground.json',
+      json_key_data:             ENV['googlePlayJsonKey'],
       apk_paths:                  './catroid/build/outputs/apk/catroid/signedRelease/catroid-catroid-signedRelease.apk',
       skip_upload_apk:            'false',
       skip_upload_metadata:       'true',
